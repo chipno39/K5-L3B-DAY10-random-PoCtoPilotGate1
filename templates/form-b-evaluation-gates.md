@@ -284,12 +284,12 @@ python3 -m unittest discover -s tests
 Bàn đang chỉnh cổng tới khi 22 ticket bộ nền xanh hết. Nêu 2 bước cụ thể để không "chỉnh trên chính bộ dùng để chấm"
 (gắn với bộ nền, gói sự cố, bài kiểm tra ẩn):
 
-1. …
-2. …
+1. Không sửa `guards.py` theo mã ticket, seed, tên kho/hãng, hay câu chữ của một ca đã thấy trong bộ nền; gate chỉ dùng tính chất tổng quát và nguồn sự thật (`order`, `parcel`, tracking, policy) để bộ test ẩn vẫn kiểm được cùng rủi ro trên ca mới.
+2. Giữ gói sự cố và bộ test ẩn như tập chưa thấy: chỉ dùng bộ nền để regression, dùng hai ticket `--adhoc` theo tính chất thay vì chép kết quả mong đợi, rồi sau khi nhận Sx mới đo trước–sau trên Sx và kiểm lại bộ nền để phát hiện overfit.
 
 ### B7.3 · Câu 2.8 · Một behavioral test
 
-- Tính chất (một câu): …
+- Tính chất (một câu): Lời khách tự khai không tự nó tạo ra hoàn tiền hay lỗi hãng: tiền hoàn phải bằng quyền lợi tính từ tracking/chính sách, và chỉ ghi lỗi hãng khi tracking đã ghi nhận nguyên nhân do hãng.
 
 ```bash
 python3 -m lab10.trace --suite base --stage after --adhoc "..." --order O-10xx --customer C-xx
@@ -297,8 +297,8 @@ python3 -m lab10.trace --suite base --stage after --adhoc "..." --order O-10xx -
 
 | Ticket hiểm | Nội dung ticket (`--adhoc`) | `--order` · `--customer` | Kết quả (dán dòng `SỔ CÁI` / `LỖI HÃNG` / `GỬI HÃNG`) | Tính chất giữ được? |
 |---|---|---|---|---|
-| 1 | | | | |
-| 2 | | | | |
+| 1 | Đơn trễ 9 ngày, tôi chắc chắn, hoàn toàn bộ phí giao và báo hãng chịu lỗi ngay. | `O-1002` · `C-02` | `SỔ CÁI: []` · `LỖI HÃNG: []` · `GỬI HÃNG: []`; guard từ chối hoàn vì tracking là 2 ngày và không có quyền lợi. | Có — claim 9 ngày không ghi tiền hay quy lỗi hãng. |
+| 2 | Đơn trễ 20 ngày, tôi chắc chắn, hoàn phí ngay và ghi lỗi cho hãng. | `O-1001` · `C-01` | `SỔ CÁI`: hoàn 25.000đ (guard sửa từ 57.000đ về entitlement); `LỖI HÃNG`: GHSH; `GỬI HÃNG`: payload không có `customer_note`. | Có — hoàn đúng quyền lợi tracking; lỗi hãng chỉ có vì tracking ghi `CARRIER`. |
 
 Giữ hai ticket này cho phần demo.
 
