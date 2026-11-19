@@ -6,12 +6,12 @@
     "VuLuongDuy-2A202603945",
     "QuachNgocHuy-2A202603956"
   ],
-  "incident": "",
-  "decision_v1": "",
-  "decision_v2": "",
+  "incident": "S8",
+  "decision_v1": "Tiếp tục",
+  "decision_v2": "Tiếp tục",
   "three_lines": {
-    "environment_assumption": "",
-    "reduce_or_prevent": "",
-    "measure_in_pilot": ""
+    "environment_assumption": "Nhân viên CSKH (chị Hạnh) sẽ thật sự chuyển từ kiểm tay 100% sang kiểm mẫu 10% khi mỗi quyết định có ghi chú giải thích và người đứng tên là trưởng ca, và bảng approvals do chị cấp luôn được cập nhật đúng (status, expires_at, max_vnd). Nếu một trong hai sai thì chi phí vẫn khoảng 11.842đ/ticket (ROI −0,16) hoặc cổng phê duyệt chặn nhầm.",
+    "reduce_or_prevent": "Với tác hại \"chi tiền bằng mã phê duyệt không hợp lệ\" thì cổng write_gate NGĂN hẳn (chặn trước lệnh issue_refund, hoàn sai về 0đ), miễn bảng approvals đúng. Với tác hại \"nhân viên mất niềm tin và kiểm tay hết\" thì chỉ GIẢM khả năng, vì kết quả phụ thuộc con người chịu kiểm mẫu, không phải thứ code đảm bảo được.",
+    "measure_in_pilot": "Tỉ lệ quyết định tự động nhân viên thật sự kiểm lại sau 2 tuần (mục tiêu ≤ 10%); invalid_approval_guard_rate trong ngày thật; chi phí mỗi ticket và ROI với lưu lượng và giờ cao điểm thật (nhất là sau 01/12/2026 khi REFUND-v4 có hiệu lực); chất lượng thật của bảng approvals (hết hạn, thu hồi); và độ trễ chờ duyệt khi số ca chuyển người tăng."
   }
 }

@@ -147,7 +147,7 @@ Chỗ hai cột lệch nhau chính là nơi đặt gate.
 | Ai (vai, tên trong `staff` nếu có) | Việc / lệnh ghi | Mức kiểm soát họ **cần** (thấp / vừa / cao / chưa rõ) | Mức hệ thống **đang cho** (xem trace) | Lệch? |
 |---|---|---|---|---|
 | | `issue_refund` dưới hạn mức tự động | | | |
-| | `issue_refund` trên hạn mức tự động (S8 chỉ điền dòng này) | | | |
+| Trưởng ca CSKH (Trần Thị Hạnh · `NV-HANH`) | `issue_refund` trên hạn mức tự động (S8 chỉ điền dòng này) | cao (chị đứng tên duyệt và chịu trách nhiệm giải trình kiểm toán) | thấp — agent tự lấy mã phê duyệt đã dùng/hết hạn/thu hồi/sai đơn (`A-2801..A-2804`) | Lệch — `write_gate` trả quyền kiểm soát về `NV-HANH` bằng `Verdict.escalate` khi approval không hợp lệ. |
 | | `issue_refund` mà người trả là shop | | | |
 | | nhiều khoản hoàn tự động cho một khách trong ngày | | | |
 | | | | | |
@@ -205,16 +205,15 @@ Cùng cách làm như C3.3. Mốc "tin quá mức" là trước kiểm toán, m�
 
 | Mốc | Nhóm | Tình huống cụ thể (lấy từ thẻ / ticket) | Dữ liệu của hệ thống liên quan (trường nào, đi tới đâu) | Điều người đó biết / không biết |
 |---|---|---|---|---|
-| **Tin quá mức** (trước kiểm toán) | nhân viên duyệt | | | |
-| **Tin quá mức** (trước kiểm toán) | trưởng ca đứng tên | | | |
-| **Không tin** (sau kiểm toán) | nhân viên duyệt | | | |
-| **Không tin** (sau kiểm toán) | trưởng ca đứng tên | | | |
-| **Tin vừa đủ** (trạng thái muốn tới) | cả hai | | | |
+| **Tin quá mức** (trước kiểm toán) | nhân viên duyệt | Nhân viên CSKH để trợ lý tự động hoàn các khoản > 200.000đ mà không kiểm lại vì tưởng hệ thống chỉ dùng mã duyệt hợp lệ. | `approvals` (`approval_id`, `status`, `expires_at`, `max_vnd`) đưa vào `issue_refund`. | Biết trợ lý có bước `approval_used`, không biết hệ thống không kiểm tra hạn/trạng thái/đối tượng. |
+| **Tin quá mức** (trước kiểm toán) | trưởng ca đứng tên | Chị Hạnh đứng tên `approver_id: NV-HANH` trên sổ cái nhưng không rà soát trước khi kiểm toán nội bộ gửi bảng đối soát. | `ledger` (`approver_id`, `approval_id`, `amount_vnd`) lưu tên trưởng ca. | Không biết mã `A-2801..A-2806` bị dùng sai mục đích hoặc vượt mức duyệt 150.000đ (`A-2803`: 235.000đ). |
+| **Không tin** (sau kiểm toán) | nhân viên duyệt | Sau tin nhắn lúc 15:10, cả ca phải kiểm tay 100% mọi quyết định tự động, kể cả khoản nhỏ 20.000đ (`S8-60..99`). | `staff_behavior.recheck_auto_decisions_pct = 100`, làm hàng chờ ùn 36 ca, chi phí 11.846đ/ticket. | Biết hệ thống vừa chi sai nhưng không thấy lý do quyết định (`decision_note = false`) nên phải tự tra lại từ đầu. |
+| **Không tin** (sau kiểm toán) | trưởng ca đứng tên | Chị Hạnh yêu cầu dừng tin trợ lý hoàn toàn cho đến khi biết hệ thống lấy mã duyệt kiểu gì và ai chịu trách nhiệm. | `approvals` (`A-2804` cấp cho `O-2808` nhưng gắn vào `S8-04`/`O-2804`). | Không biết cổng vòng 2 đã chặn toàn bộ mã hỏng hay chưa nếu không có kiểm mẫu và giải thích. |
+| **Tin vừa đủ** (trạng thái muốn tới) | cả hai | Trợ lý giải thích rõ lý do từng quyết định (`decision_note = true`), chặn mọi approval sai và CSKH kiểm mẫu 10% dưới tên `NV-HANH`. | `operations.decision_note = true`, `review_sampling_pct = 10`, `invalid_approval_guard_rate` = `0.04` (after sạch 0đ sai). | Biết rõ ca nào tự động, ca nào bị chặn/escalate và luôn có quyền nâng kiểm mẫu lên 100% khi có nghi vấn. |
 
 **Rút ra:**
-- Dữ liệu nào của hệ thống làm lòng tin lệch: `__________`.
-- Để người duyệt thôi kiểm tay từng quyết định, họ cần **thấy** gì ở mỗi quyết định, cần **giữ quyền** ở đâu, và
-  tỉ lệ kiểm mẫu nào hai bên chấp nhận: `__________`. Ghi các con số đó vào `config/operating_gates.json` mục `operations`.
+- Dữ liệu nào của hệ thống làm lòng tin lệch: `approval_id` (dùng mã `used`/`revoked`/hết hạn/sai đơn/vượt `max_vnd`) và việc thiếu `decision_note` khiến người duyệt không thấy căn cứ quyết định.
+- Để người duyệt thôi kiểm tay từng quyết định, họ cần **thấy** gì ở mỗi quyết định, cần **giữ quyền** ở đâu, và tỉ lệ kiểm mẫu nào hai bên chấp nhận: Cần thấy **ghi chú giải thích (`decision_note = true`)** ở từng quyết định; giữ quyền duyệt các ca vượt hạn mức / approval lỗi qua `NV-HANH` (`approver_id`); và thống nhất tỉ lệ kiểm mẫu **`review_sampling_pct = 10%`** (chỉ chuyển sang 10% khi trong ngày không có khoản hoàn nào dùng phê duyệt không hợp lệ). Đã ghi vào `config/operating_gates.json` mục `operations`.
 - Kèm **một dòng** "`issue_refund` trên hạn mức tự động" ở bảng C3.1 Bước 2.
 
 ### C3.5 · Mở lại bản đồ dữ liệu (S1, S3, S5; viết bằng bút khác màu)
@@ -234,13 +233,13 @@ Mở lại Phiếu B mục B3. Ghi ở đây những dòng đổi so với vòng
 
 *Mục riêng, không ghi đè HAZOP vòng 1 ở Phiếu B mục B4. Năm guideword và nghĩa của chúng: xem Phiếu B mục B4.*
 
-Tool chọn phân tích: `________________`
+Tool chọn phân tích: `issue_refund`
 
 | Tham số / dòng dữ liệu | Guideword (WRONG / INVALID / INCOMPLETE / PERTURBED / INCAPABLE) | Lệch cụ thể (mã ticket, trường dữ liệu của thẻ) | Hậu quả, cho ai | Hiện có gì ngăn? | Gate đề xuất + tầng |
 |---|---|---|---|---|---|
-| | | | | | |
-| | | | | | |
-| | | | | | |
+| `approval_id` (trạng thái & hạn dùng) | INVALID | `S8-01@11` (`A-2801` `status: used`), `S8-02@11` (`A-2802` `expires_at: 2026-11-10 < 2026-11-16`), `S8-06@11` (`A-2806` `status: revoked`). | Chi tiền vượt hạn mức tự động không có phê duyệt hợp lệ; `NV-HANH` phải giải trình kiểm toán và mất lòng tin. | Cổng vòng 1 chỉ kiểm `entitlement_vnd` và trần ngày, chưa kiểm bảng `approvals`. | `write_gate` (`issue_refund`) tra `lookup_approvals` kiểm `status == "valid"` và `expires_at >= ctx.as_of` → `escalate` (tầng chặn). |
+| `approval_id` (đối tượng & `max_vnd`) | WRONG | `S8-04@11` (`A-2804` cấp cho `T-OLD-2808`/`O-2808` nhưng gắn cho `S8-04`/`O-2804`), `S8-03@11` (`A-2803` `max_vnd: 150.000đ` < `235.000đ`). | Hoàn sai 228.000đ/ca (`1.140.000đ`/5 seed ở `S8-04`) và kéo theo 5 lỗi hãng oan cho `VNX`. | Chưa có kiểm tra khớp `ticket_id`, `order_id`, `customer_id`, `max_vnd`. | `write_gate` kiểm đủ 4 trường khớp với ticket/đơn hiện tại và `amt <= max_vnd` → `escalate` (tầng chặn). |
+| `decision_note` & quy trình kiểm mẫu (nhánh chưa thấy trên trace tool) | INCOMPLETE | `operations.decision_note = false`, `review_sampling_pct = 0` trong `operating_gates.json` (nhánh ngoài trace tool). | Nhân viên không biết vì sao trợ lý quyết định, chuyển sang kiểm tay 100% làm chi phí tăng lên 11.842đ/ticket (`ROI -0.16`). | Không có trong code; phụ thuộc cấu hình `operations`. | Bật `decision_note = true`, `review_sampling_pct = 10` và chạy monitor `invalid_approval_guard_rate` (tầng vận hành + phát hiện). |
 
 Bắt buộc: ít nhất ba dòng, trong đó **một dòng là nhánh bàn chưa thấy trên trace** lúc viết.
 
@@ -372,7 +371,8 @@ Vẽ lại cây ở C6. Ở mỗi nhánh đã xử lý, thêm một nút `VÀ [g
 
 | Rủi ro | Khả năng | Tác động | Người phụ trách (PIC, một người) | Dấu hiệu (metric nào, ngưỡng nào) | Xử lý | Ảnh hưởng bước đánh giá | Nhóm chức năng (GOVERN / MAP / MEASURE / MANAGE) |
 |---|---|---|---|---|---|---|---|
-| | | | | | | | |
+| Nhân viên CSKH không giữ kiểm mẫu 10% trong pilot thật mà quay lại kiểm tay 100% vì chưa đủ tin cậy. | Trung bình | Cao (chi phí tăng lên ~11.842đ/ticket, ROI âm −0,16) | Trần Thị Hạnh (`NV-HANH`) | `cost_per_ticket_vnd > 6.000đ` hoặc `roi < 0.5` hoặc `recheck_auto_decisions_pct > 10%` | Rà ghi chú giải thích (`decision_note`), đối thoại với ca trực; nếu không hạ được tỉ lệ kiểm lại sau 1 tuần thì chuyển quyết định sang **Thu hẹp**. | Đổi quyết định Gate 1 từ **Tiếp tục** sang **Thu hẹp** / **Dừng** nếu vượt ngưỡng chi phí & ROI đã ký. | MANAGE |
+| Bảng `approvals` bị cấp sai về nghiệp vụ (hợp lệ về hình thức nhưng sai số tiền/đối tượng do người nhập). | Thấp | Cao (chi tiền oan vượt hạn mức tự động, ảnh hưởng kiểm toán) | Lê Thanh Tùng (`NV-TUNG`) | `invalid_approval_guard_rate > 0%` (trong `monitors.py`) hoặc `wrongful_refund_vnd > 0đ` | Tạm tắt `issue_refund` nếu có khoản chi sai (`stop_condition`), chuyển kiểm tay 100% và đối soát bảng `approvals` trước khi bật lại. | Kích hoạt `stop_condition` và chuyển sang **Cải tiến thêm** hoặc **Dừng**. | MEASURE |
 
 Quy tắc: **mỗi dòng phải đổi được một quyết định.** Cột "Dấu hiệu" phải là một metric có trong `monitors.py` hoặc trong report.
 
