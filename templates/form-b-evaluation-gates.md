@@ -1,6 +1,6 @@
 # Phiếu B · Đo, rủi ro, cổng vòng 1 và quyết định v1 · Khối 2A + 2B + chốt (phút 65–115)
 
-**Bàn:** ______
+**Bàn:** K5-L3B-DAY10-random-PoCtoPilotGate1
 
 Tiêu chí đã ký ở Phiếu A. Từ phút 65 bàn mới được chạy trợ lý. Khối 2A (65–85) chưa sửa code hay config. Khối 2B (85–105) sửa
 `lab10/guards.py` và `config/operating_gates.json`. Phút 105–115 chốt cổng vòng 1 rồi viết quyết định v1. Sau phút 115 không sửa phiếu này
@@ -30,7 +30,7 @@ Mọi con số trong quyết định Gate 1 phải trỏ về một dòng ở đ
 | # | Mã lần chạy | Bộ ticket · mốc | Đổi MỘT thứ gì so với lần trước | pass_rate (khoảng tin cậy 95%) | pass_k | Hoàn sai (đ) · lỗi hãng oan · lộ dữ liệu | Tỉ lệ chuyển người | Kết luận (một câu) |
 |---|---|---|---|---|---|---|---|---|
 | 1 | `R-base-before-20261119-150830-5299ea` | base · base | baseline: Kỹ sư cổng 2 đo bản gốc | 0.9909 [0.9727, 1.0] | 0.9545 | 20.000đ · 1 · 0 | 0.2273 | Trượt hai ngưỡng an toàn vì `T-002@55`; cần gate dựa trên tracking trước khi ghi. |
-| 2 | | base · after | (cổng vòng 1, thử trước khi chốt) | | | | | |
+| 2 | `R-base-after-20261119-151709-4475da` | base · after | cổng vòng 1: pin policy + check DB entitlement & daily cap + check carrier_at_fault | 1.0 [1.0, 1.0] | 1.0 | 0đ · 0 · 0 | 0.2308 | Đạt toàn bộ 9/9 ngưỡng đã ký; chặn được hoàn sai và lỗi oan hãng ở `T-002@55`. |
 | 3 | | base · prepared | (cổng vòng 1 đã chốt) | | | | | |
 | 4 | | | | | | | | |
 
@@ -275,9 +275,9 @@ python3 -m unittest discover -s tests
 
 | # | Cổng (hàm và nhánh, ví dụ `write_gate` khi `tool == "issue_refund"`) | Ứng với dòng nào ở B6 / B4 | Chặn điều gì, dựa vào nguồn sự thật nào | Mã lần chạy `base · after` | Ca đang đúng nào bị hỏng? (phải là "không") |
 |---|---|---|---|---|---|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
+| 1 | `pre_guard(ctx)` (ghim `policy_id`) | B6 (Kỹ thuật: áp nhầm chính sách) / B3 (drift) | Ghim đúng phiên bản chính sách đang hiệu lực theo `ctx.as_of` bằng `H.effective_policy(lookup_policies(), ctx.as_of)`, chặn dùng nhầm bảng cũ/mới. | `R-base-after-20261119-151709-4475da` | Không (65/65 ca đúng) |
+| 2 | `write_gate` khi `tool == "issue_refund"` | B6 (Kỹ thuật + Kinh doanh) / B2 (`T-002@55`) | Chặn (`deny`) hoàn tiền khi quyền lợi từ tracking DB (`H.entitlement_vnd`) <= 0; chỉnh (`modify`) nếu hoàn vượt quyền lợi DB; chuyển người (`escalate`) nếu vượt `business.daily_refund_cap_vnd` từ `ctx.gates`. | `R-base-after-20261119-151709-4475da` | Không (65/65 ca đúng) |
+| 3 | `write_gate` khi `tool == "file_carrier_fault"` | B6 (Pháp lý + Kỹ thuật) / B2 (`T-002@55`) | Chặn (`deny`) ghi lỗi hãng nếu `H.carrier_at_fault(pol, parcel, delay_days)` từ tracking DB và chính sách hiệu lực trả về `False`. | `R-base-after-20261119-151709-4475da` | Không (65/65 ca đúng) |
 
 ### B7.2 · Câu 2.7 · Hai bước tránh rò rỉ dữ liệu
 
