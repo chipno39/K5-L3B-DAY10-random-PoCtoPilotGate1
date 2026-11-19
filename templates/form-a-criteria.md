@@ -1,6 +1,6 @@
 # Phiếu A · Tiêu chí và cách đo · Khối 1 (phút 15–65)
 
-**Bàn:** ______ · **Người cầm bút chính:** vai Sản phẩm và kinh doanh (câu 1.3: Kỹ sư cổng; câu 1.2, 1.4: Vận hành và pháp lý)
+**Bàn:** K5-L3B-DAY10-random-PoCtoPilotGate1 · **Người cầm bút chính:** vai Sản phẩm và kinh doanh (câu 1.3: Kỹ sư cổng; câu 1.2, 1.4: Vận hành và pháp lý)
 
 Điền phiếu này **trước khi chạy trợ lý lần nào**. Viết xong thì chép ngưỡng sang `config/acceptance_criteria.json`, ký ở phút 60–65,
 rồi mới chạy đánh giá. Khối 1 không sửa code.
@@ -48,12 +48,12 @@ trợ lý có đang gây thiệt hại cho bên ngoài LogiX không; không có 
 
 | | Offline, cho MỘT bước (câu 1.3) | Telemetry production (câu 1.4) |
 |---|---|---|
-| **Bước / hành vi được đo** | | |
-| **Thước đo** (một câu, có đơn vị) | | |
-| **Dữ liệu** (lấy ở đâu, bao nhiêu, ai gán nhãn) | | |
-| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | | |
+| **Bước / hành vi được đo** | Ghi lỗi hãng vận chuyển (`file_carrier_fault`) | |
+| **Thước đo** (một câu, có đơn vị) | Tỉ lệ lần chạy mà agent gọi `file_carrier_fault` gán lỗi cho hãng khi theo tracking DB & chính sách hiệu lực thì hãng không có lỗi (đơn vị: %) | |
+| **Dữ liệu** (lấy ở đâu, bao nhiêu, ai gán nhãn) | Trace trong `runs/<mã lần chạy>/traces/` (sự kiện tool `file_carrier_fault`) đối chiếu với `data/world.json` (`orders[].parcels[].delay_cause`, `policies`) trên 22 ticket × 5 seed của bộ nền; nhãn chuẩn xác định tự động bằng hàm đối chiếu nguồn sự thật `carrier_at_fault`. | |
+| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | (Số lần gọi `file_carrier_fault` sai so với nguồn sự thật) / (Tổng số lần chạy có gọi `file_carrier_fault`) × 100%; các lần chạy không gọi `file_carrier_fault` loại khỏi mẫu số và đếm riêng. | |
 | **Khung thời gian / ngưỡng báo động** | (không áp dụng) | |
-| **Điểm mù** (thước đo này KHÔNG thấy gì) | | |
+| **Điểm mù** (thước đo này KHÔNG thấy gì) | Không thấy trường hợp dữ liệu `delay_cause` trong tracking DB tự thân bị nhập sai, và không thấy trường hợp agent bỏ sót không ghi lỗi khi hãng thực sự có lỗi. | |
 
 **Ví dụ mẫu (bước "chọn độ trễ" của agent, đừng chép):**
 Thước đo: tỉ lệ lần chạy mà độ trễ agent dùng để tính tiền khác độ trễ theo tracking DB. Dữ liệu: sự kiện `proposal.delay_days_used`
@@ -71,9 +71,9 @@ nhau chia cho số lần chạy có sự kiện `proposal`; lần chạy không 
 
 ### Câu 1.5 · Chọn MỘT kết luận và giải thích một câu
 
-Số minh hoạ trong đề (không phải số của bàn). Khoanh: **(a) · (b) · (c) · (d)**
+Số minh hoạ trong đề (không phải số của bàn). Khoanh: **(b)**
 
-Giải thích một câu: …
+Giải thích một câu: Khoảng tin cậy 95% của bản X là `[0,9400; 1,0]`, nên kết quả `1,0` (50/50) của bản Y nằm hoàn toàn trong khoảng dao động ngẫu nhiên của X và chưa đủ căn cứ thống kê để kết luận Y tốt hơn X.
 
 ---
 
