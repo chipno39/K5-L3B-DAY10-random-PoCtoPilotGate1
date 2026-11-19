@@ -1,2 +1,6 @@
 config/acceptance_criteria.json -text
 config/acceptance_criteria.lock -text
+data/** -text
+incidents/** -text
+lab10/** -text
+tests/** -text
