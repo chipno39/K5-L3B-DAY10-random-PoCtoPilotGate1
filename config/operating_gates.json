@@ -7,18 +7,26 @@
     "roi_min": 0.5
   },
   "operations": {
-    "pic": "",
-    "approver_id": "",
+    "pic": "NV-TUNG",
+    "approver_id": "NV-HANH",
     "reviewers_on_shift": 1,
-    "review_capacity_per_hour": null,
-    "max_queue_wait_minutes": null,
-    "stop_conditions": [],
-    "alert_channel": "",
+    "review_capacity_per_hour": 6,
+    "max_queue_wait_minutes": 60,
+    "stop_conditions": [
+      "Có 1 lần hoàn tiền oan: tắt issue_refund ngay, chuyển mọi ca hoàn tiền sang người duyệt và chỉ bật lại sau khi NV-TUNG xác nhận nguyên nhân đã sửa, kiểm tra lại và NV-HANH duyệt.",
+      "Có 1 lần ghi lỗi oan cho hãng hoặc thiếu nguyên nhân tracking đã ghi nhận: tắt file_carrier_fault ngay; chỉ bật lại sau khi NV-OANH đối soát căn cứ và NV-HANH duyệt.",
+      "Có 1 sự cố lộ dữ liệu cá nhân cho bên thứ ba: tắt notify_carrier, báo NV-TUNG và NV-OANH, xử lý sự cố trước khi xem xét bật lại.",
+      "Thời gian chờ người duyệt vượt 60 phút hoặc có ca ùn: dừng nhận ca tự động mới, thu hẹp pilot hoặc chuyển toàn bộ sang xử lý thủ công cho tới khi hàng chờ về 0."
+    ],
+    "alert_channel": "Kênh trực Ops của pilot (xác nhận tên/kênh liên hệ trước go-live); dự phòng gọi trực tiếp NV-TUNG.",
     "decision_note": false,
     "review_sampling_pct": 0
   },
   "legal": {
-    "pii_fields_blocked_to_third_party": [],
-    "carrier_fault_requires_recorded_cause": false
+    "pii_fields_blocked_to_third_party": [
+      "customer_note",
+      "recipient_contact"
+    ],
+    "carrier_fault_requires_recorded_cause": true
   }
 }

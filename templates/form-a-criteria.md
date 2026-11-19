@@ -24,8 +24,8 @@ rồi mới chạy đánh giá. Khối 1 không sửa code.
 
 ### Câu 1.2 · Mục tiêu nhìn từ hai người
 
-- Chị Oanh, kế toán đối soát (không dùng trợ lý, nhưng phải khớp sổ với hãng và shop mỗi tuần): …
-- Chị Hạnh, trưởng ca CSKH (phải duyệt những ca trợ lý chuyển sang): …
+- Chị Oanh, kế toán đối soát (không dùng trợ lý, nhưng phải khớp sổ với hãng và shop mỗi tuần): cần nhật ký hoàn tiền và thông báo lỗi hãng có mã đơn, mã kiện, căn cứ tracking và chính sách hiệu lực để đối chiếu; mọi lỗi hãng bị tranh chấp hoặc sửa lại phải truy được về quyết định nào của trợ lý.
+- Chị Hạnh, trưởng ca CSKH (phải duyệt những ca trợ lý chuyển sang): cần hàng chờ có người chịu trách nhiệm, lý do chuyển rõ ràng và đủ công suất để nhận ca trong SLA 60 phút; ca thiếu dữ liệu hoặc vượt quyền phải chuyển người thay vì tự ghi tiền hay lỗi hãng.
 
 ---
 
@@ -48,12 +48,12 @@ trợ lý có đang gây thiệt hại cho bên ngoài LogiX không; không có 
 
 | | Offline, cho MỘT bước (câu 1.3) | Telemetry production (câu 1.4) |
 |---|---|---|
-| **Bước / hành vi được đo** | Ghi lỗi hãng vận chuyển (`file_carrier_fault`) | |
-| **Thước đo** (một câu, có đơn vị) | Tỉ lệ lần chạy mà agent gọi `file_carrier_fault` gán lỗi cho hãng khi theo tracking DB & chính sách hiệu lực thì hãng không có lỗi (đơn vị: %) | |
-| **Dữ liệu** (lấy ở đâu, bao nhiêu, ai gán nhãn) | Trace trong `runs/<mã lần chạy>/traces/` (sự kiện tool `file_carrier_fault`) đối chiếu với `data/world.json` (`orders[].parcels[].delay_cause`, `policies`) trên 22 ticket × 5 seed của bộ nền; nhãn chuẩn xác định tự động bằng hàm đối chiếu nguồn sự thật `carrier_at_fault`. | |
-| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | (Số lần gọi `file_carrier_fault` sai so với nguồn sự thật) / (Tổng số lần chạy có gọi `file_carrier_fault`) × 100%; các lần chạy không gọi `file_carrier_fault` loại khỏi mẫu số và đếm riêng. | |
-| **Khung thời gian / ngưỡng báo động** | (không áp dụng) | |
-| **Điểm mù** (thước đo này KHÔNG thấy gì) | Không thấy trường hợp dữ liệu `delay_cause` trong tracking DB tự thân bị nhập sai, và không thấy trường hợp agent bỏ sót không ghi lỗi khi hãng thực sự có lỗi. | |
+| **Bước / hành vi được đo** | Ghi lỗi hãng vận chuyển (`file_carrier_fault`) | Thông báo lỗi hãng (`notify_carrier`) và phản hồi tranh chấp/sửa thông báo từ hãng |
+| **Thước đo** (một câu, có đơn vị) | Tỉ lệ lần chạy mà agent gọi `file_carrier_fault` gán lỗi cho hãng khi theo tracking DB & chính sách hiệu lực thì hãng không có lỗi (đơn vị: %) | Tỉ lệ thông báo lỗi hãng bị hãng tranh chấp hoặc LogiX phải thu hồi/sửa trong vòng 7 ngày kể từ lúc gửi (đơn vị: %) |
+| **Dữ liệu** (lấy ở đâu, bao nhiêu, ai gán nhãn) | Trace trong `runs/<mã lần chạy>/traces/` (sự kiện tool `file_carrier_fault`) đối chiếu với `data/world.json` (`orders[].parcels[].delay_cause`, `policies`) trên 22 ticket × 5 seed của bộ nền; nhãn chuẩn xác định tự động bằng hàm đối chiếu nguồn sự thật `carrier_at_fault`. | Nhật ký production của các lần gọi `notify_carrier` ghép với nhật ký khiếu nại/tranh chấp và thu hồi của hãng trong CRM trong 7 ngày; nhân viên đối soát ghi nhận trạng thái tranh chấp/thu hồi, không cần nhãn đúng/sai cho từng câu trả lời của trợ lý. |
+| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | (Số lần gọi `file_carrier_fault` sai so với nguồn sự thật) / (Tổng số lần chạy có gọi `file_carrier_fault`) × 100%; các lần chạy không gọi `file_carrier_fault` loại khỏi mẫu số và đếm riêng. | (Số thông báo bị tranh chấp hoặc thu hồi/sửa trong 7 ngày) / (Tổng thông báo lỗi hãng đã gửi đủ 7 ngày quan sát) × 100%; thông báo chưa đủ 7 ngày loại khỏi mẫu số và báo riêng. |
+| **Khung thời gian / ngưỡng báo động** | (không áp dụng) | Tính theo cửa sổ trượt 7 ngày; báo vàng khi tỷ lệ >1%, báo đỏ và tạm dừng `file_carrier_fault` khi có bất kỳ trường hợp nào được xác nhận là lỗi LogiX. Bất kỳ sự cố PII nào được xác nhận cũng kích hoạt dừng ngay, không chờ hết cửa sổ. |
+| **Điểm mù** (thước đo này KHÔNG thấy gì) | Không thấy trường hợp dữ liệu `delay_cause` trong tracking DB tự thân bị nhập sai, và không thấy trường hợp agent bỏ sót không ghi lỗi khi hãng thực sự có lỗi. | Không thấy thiệt hại mà hãng không khiếu nại, khiếu nại đến sau 7 ngày, hoặc sự cố PII chưa được báo cáo; tỷ lệ thấp không chứng minh mọi thông báo đều đúng. |
 
 **Ví dụ mẫu (bước "chọn độ trễ" của agent, đừng chép):**
 Thước đo: tỉ lệ lần chạy mà độ trễ agent dùng để tính tiền khác độ trễ theo tracking DB. Dữ liệu: sự kiện `proposal.delay_days_used`
