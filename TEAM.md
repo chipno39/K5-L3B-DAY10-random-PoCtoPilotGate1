@@ -24,23 +24,26 @@ Ghi `members` trong `submission/submission.json` theo dạng `"HoVaTen-MSSV"`, k
 
 Mỗi thành viên tự viết một mục bên dưới (chép mẫu, đổi tiêu đề thành họ tên không dấu và MSSV, ví dụ `## NguyenVanAn-20241234`).
 
-## HoVaTen-MSSV
+## LuongDucAnh-2A202603931
 
 ### Phần việc phụ trách
 
-Vai trong bàn; câu nào của đề, mục nào của phiếu A/B/C, file nào (`lab10/guards.py`, `config/operating_gates.json`, …).
+Vai Vận hành và Pháp lý. Phiếu A: A1.2 (mục tiêu của kế toán đối soát và trưởng ca), A2 câu 1.4 (telemetry production). Phiếu B: B4 HAZOP, B5 checklist 9 nhóm, B7.5–B7.6 (cổng vận hành/pháp lý và runbook). Phiếu C thẻ S8: cập nhật `operations.decision_note`, `operations.review_sampling_pct`, C0, checklist và runbook C11. File: `config/operating_gates.json`, `templates/form-a-criteria.md`, `templates/form-b-evaluation-gates.md`, `templates/form-c-incident.md`.
 
 ### Đóng góp cụ thể
 
-...
+- Viết mục tiêu theo nhu cầu của chị Oanh và chị Hạnh; đề xuất telemetry 7 ngày cho thông báo lỗi hãng bị tranh chấp/thu hồi.
+- Hoàn thiện HAZOP cho `file_carrier_fault`, thêm rủi ro vận hành và dữ liệu gửi bên thứ ba; điền checklist 9 nhóm với trạng thái, bằng chứng cần kiểm và PIC có tên.
+- Đặt PIC NV-TUNG, người duyệt NV-HANH, công suất 6 ca/giờ, SLA 60 phút, điều kiện dừng và yêu cầu chặn dữ liệu cá nhân khỏi payload hãng; viết runbook phần 1–3 và giờ cao điểm.
+- Với S8, bật ghi chú cho từng quyết định và kiểm mẫu 10%; cập nhật C0, checklist và runbook phần 4–5. Kết quả S8 after: nhân viên kiểm lại 10%, chi phí 2.978đ/ticket, ROI 2,36, không ùn và không có hoàn sai/lỗi hãng oan/lộ PII.
 
 ### Bằng chứng
 
-Mã commit, mã lần chạy (`runs/<mã>`), dòng trong phiếu.
+Commit `a05f99a` (Phiếu A/B và config vận hành/pháp lý), `8513d7b` (S8, ghi chú quyết định và kiểm mẫu). Runs: `R-S8-after-20261119-163920-fa0858` (bật decision note), `R-S8-after-20261119-163929-99d351` (sampling 10%), `R-base-after-20261119-163938-99d351` (kiểm regression). Kết quả grade chung: `R-S8-grade-20261119-171032-f03b12` (`PASS-VISIBLE`).
 
 ### Exit ticket
 
-Một điều học được, một điều còn chưa chắc.
+Học được: giải thích mỗi quyết định và kiểm mẫu có thể khôi phục niềm tin của người duyệt mà không cần giữ kiểm tay 100%; trong mô phỏng S8, chi phí giảm từ 11.846đ xuống 2.978đ/ticket. Còn chưa chắc: kiểm mẫu 10% có đủ phát hiện lỗi hiếm trong pilot thật hay không; cần theo dõi và điều chỉnh theo dữ liệu thực tế.
 
 
 ## VuLuongDuy-2A202603945
