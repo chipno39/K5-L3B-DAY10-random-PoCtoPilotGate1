@@ -252,9 +252,9 @@ Bắt buộc: ít nhất ba dòng, trong đó **một dòng là nhánh bàn chư
 
 ### Câu 3.2 · Một specification mà nếu bị vi phạm thì gây ra tác hại trên thẻ
 
-Kiểm được bằng code hoặc bằng một con số trong report: …
+Kiểm được bằng code hoặc bằng một con số trong report: Mọi khoản hoàn vượt `auto_limit_vnd` của chính sách đang hiệu lực chỉ được trợ lý tự ghi khi kèm một mã phê duyệt còn giá trị: mã tồn tại trong bảng `approvals`, `status = valid`, `expires_at` chưa quá ngày hôm nay, cùng `ticket_id`, `order_id`, `customer_id` với ticket đang xử lý, và số tiền chi không vượt `max_vnd`. Thiếu một điều kiện thì không tự chi mà chuyển người duyệt. Nếu vi phạm thì tiền hoàn sai (ở mốc base của S8: 6.845.000đ hoàn sai, 35 lỗi hãng oan) và trưởng ca bị đứng tên một khoản chị không duyệt, đúng tác hại trong tin nhắn của chị Hạnh. Kiểm được bằng con số: `wrongful_refund_vnd` bằng 0 trên gói S8 trong report `lab10.grade`.
 
-Kiểm bằng gì (hàm trong `guards.py`, dòng report nào): …
+Kiểm bằng gì (hàm trong `guards.py`, dòng report nào): Hàm `write_gate` trong `lab10/guards.py`, nhánh `tool == "issue_refund"` của vòng 2: tra `ctx.tools.lookup_approvals(approval_id=...)`, rồi `Verdict.escalate` kèm sự kiện trace `guard_escalate_missing_approval`, `guard_escalate_unknown_approval` hoặc `guard_escalate_invalid_approval`. Dòng report: `visible · wrongful_refund_vnd` (6.845.000 → 1.140.000 → 0 qua ba mốc base · prepared · after), `visible · wrongful_carrier_faults` (35 → 5 → 0) và chỉ số theo dõi `invalid_approval_guard_rate` (0,0 ở prepared, 0,04 ở after: sáng đèn khi có ca phê duyệt không hợp lệ).
 
 ### Câu 3.3 · Một giả định về môi trường mà người thiết kế đã ngầm tin, nhưng nhiều khả năng sai ngoài thực tế
 
@@ -423,30 +423,30 @@ Cột v1 nằm ở Phiếu B mục B8; không sửa cột đó.
 
 | | **v2** (phút 185–200, SAU sự cố) |
 |---|---|
-| Commit ký tiêu chí | phải giống v1 |
-| Hash chốt cổng vòng 1 | phải giống v1 |
-| Mã lần chạy dùng làm bằng chứng | thẻ, mốc base: ________ · prepared: ________ · after: ________ |
-| Còn dòng "vượt trần" nào trong report? (hàng chờ, chi phí, ROI, trần tiền, pháp lý) | |
-| Kho hoặc hãng có số xấu nhất: ____. Nếu chỉ nhìn phân khúc này, quyết định có đổi không? *(Khối "theo kho và hãng" trong output `lab10.eval` / `lab10.grade`, hoặc mục `by_segment` trong `report.json`.)* | |
-| Quyết định (khoanh một) | Tiếp tục · Thu hẹp · Cải tiến thêm · Dừng |
-| Bằng chứng 1: mã lần chạy + chỉ số bắt buộc nào đạt / chưa | |
-| Bằng chứng 2 | |
-| Bằng chứng 3 | |
-| Khớp dòng nào trong `decision_rule` đã ký? | |
-| Nếu Thu hẹp: cắt kho nào / còn bao nhiêu phần trăm / mấy người trực, và ticket bị cắt đi đâu | |
-| Nếu Cải tiến thêm: giả thuyết cụ thể (nhánh nào của fault tree) + hạn | |
-| Nếu Dừng: bài học ghi lại | |
-| Ngày quyết định lại (trừ khi Dừng) | |
-| PIC ký | |
+| Commit ký tiêu chí | `f512b92` (`Sign acceptance criteria`), giống v1 |
+| Hash chốt cổng vòng 1 | `298b9e9d`, giống v1 |
+| Mã lần chạy dùng làm bằng chứng | thẻ S8, mốc base: `R-S8-before-20261119-160904-69a4dd` · prepared: `R-S8-prepared-20261119-160905-69a4dd` · after: `R-S8-after-20261119-165233-f03b12` (grade ba mốc `R-S8-grade-20261119-171032-f03b12`); bộ nền sau khi sửa: `R-base-after-20261119-163938-99d351` |
+| Còn dòng "vượt trần" nào trong report? (hàng chờ, chi phí, ROI, trần tiền, pháp lý) | Không (`3 visible ✅`, `trần còn vượt: không`). Trên S8 mốc after: chi phí 2.978đ/ticket ≤ 6.000đ và thấp hơn làm tay 10.000đ, ROI 2,36 ≥ 0,5, 0 ca ùn, chờ lâu nhất 1 phút ≤ 60 phút, hoàn tự động 24.000đ ≤ trần 1.800.000đ, 0 lộ PII, 0 kho đắt hơn làm tay. (Mốc prepared còn đỏ: chi phí 11.846đ > 10.000đ, ROI −0,93.) |
+| Kho hoặc hãng có số xấu nhất: ____. Nếu chỉ nhìn phân khúc này, quyết định có đổi không? *(Khối "theo kho và hãng" trong output `lab10.eval` / `lab10.grade`, hoặc mục `by_segment` trong `report.json`.)* | kho `HCM` (chi phí 2.116đ/ticket, cao hơn `HN` 1.411đ nhưng vẫn thấp hơn làm tay 10.000đ; pass 1,0, hoàn sai 0); các hãng đều pass 1,0, hoàn sai 0. Không đổi quyết định. Ngoài phạm vi pilot, ở mốc base kho `DN` (pass 0,75, hoàn sai 4.625.000đ) và `CT` (pass 0,8182, hoàn sai 1.080.000đ) còn rất xấu, nên giữ nguyên phạm vi chỉ gồm `HN` và `HCM`. |
+| Quyết định (khoanh một) | **Tiếp tục** (trong phạm vi pilot `HN` và `HCM`, độ phủ trên gói S8 là 0,4808) · Thu hẹp · Cải tiến thêm · Dừng |
+| Bằng chứng 1: mã lần chạy + chỉ số bắt buộc nào đạt / chưa | `R-S8-grade-20261119-171032-f03b12`: cả 5 chỉ số bắt buộc đạt trên S8 mốc after: `pass_rate` 1,0 ≥ 0,93; `pass_k` 1,0 ≥ 0,85; `wrongful_refund_vnd` 0đ; `wrongful_carrier_faults` 0; `pii_leaks` 0. (Mốc prepared chưa đạt: `pass_rate` 0,96, hoàn sai 1.140.000đ, 5 lỗi hãng oan.) |
+| Bằng chứng 2 | Ba ngưỡng `business_ops` đạt: S8 after chi phí 2.978đ ≤ 6.000đ, ROI 2,36 ≥ 0,5, 0 ca ùn; bộ nền `R-base-after-20261119-163938-99d351` giữ nguyên 65/65 đạt, chi phí 5.550đ ≤ 6.000đ, ROI 0,8 ≥ 0,5, `escalation_rate` 0,3077 ≤ 0,35. Nhân viên kiểm lại quyết định tự động giảm từ 100% xuống 10%. |
+| Bằng chứng 3 | So ba mốc trong report: `pass_rate` 0,8654 → 0,96 → 1,0; hoàn sai 6.845.000đ → 1.140.000đ → 0đ; lỗi hãng oan 35 → 5 → 0; report ghi "Niềm tin của nhân viên duyệt: đạt" và "Được phép cân nhắc 'Tiếp tục'". Các mục máy đo `1 integrity`, `2 criteria`, `3 visible`, `5 regression`, `6 monitor` đều ✅. |
+| Khớp dòng nào trong `decision_rule` đã ký? | Khớp dòng "Tiếp tục" trong `config/acceptance_criteria.json`: cả 5 ngưỡng bắt buộc và 3 ngưỡng `business_ops` đều đạt trên bộ nền VÀ trên gói sự cố S8, và tổng hoàn tự động trong ngày (24.000đ) không vượt trần 1.800.000đ. |
+| Nếu Thu hẹp: cắt kho nào / còn bao nhiêu phần trăm / mấy người trực, và ticket bị cắt đi đâu | (Không áp dụng ở v2; pilot vẫn chỉ ở `HN` và `HCM`, ticket ngoài phạm vi tiếp tục làm tay) |
+| Nếu Cải tiến thêm: giả thuyết cụ thể (nhánh nào của fault tree) + hạn | (Không áp dụng ở v2) |
+| Nếu Dừng: bài học ghi lại | (Không áp dụng ở v2) |
+| Ngày quyết định lại (trừ khi Dừng) | `2026-11-30` (trước ngày `REFUND-v4` có hiệu lực 01/12/2026; xem lại cả tiêu chí vì v4 đổi ngưỡng trễ và hạn mức tự động) |
+| PIC ký | Nguyễn Xuân Đạt (2A202603958) · Lê Thanh Tùng (NV-TUNG) |
 
 **Chỉ ở v2**
-- Quyết định đổi hay giữ so với v1? Vì con số nào: …
-- Report tự kiểm tra: mã lần chạy `__________` · ô nào còn đỏ (nguyên nhân × tầng): …
-- Cổng vòng 1 (mốc prepared) đã đỡ được gì trước khi bàn biết sự cố, và bỏ sót gì: …
-- Report ghi "được phép cân nhắc Tiếp tục" hay "không đủ căn cứ"? Quyết định của bàn có khớp không: …
-- Một thứ bộ thử hôm nay chưa đo, và nó ảnh hưởng quyết định ra sao: …
+- Quyết định đổi hay giữ so với v1? Vì con số nào: Giữ **Tiếp tục**. Ở v1 chưa biết sự cố nên bộ nền đạt 9/9 ngưỡng; sau thẻ S8 vẫn đạt 9/9 ngưỡng trên cả bộ nền (65/65) và gói S8 (hoàn sai 6.845.000đ → 0đ, chi phí 11.846đ → 2.978đ, ROI −0,93 → 2,36). Quyết định không đổi, nhưng điều kiện đi kèm đổi: phải giữ `decision_note = true`, `review_sampling_pct = 10` và cổng kiểm phê duyệt.
+- Report tự kiểm tra: mã lần chạy `R-S8-grade-20261119-171032-f03b12` · ô nào còn đỏ (nguyên nhân × tầng): Không ô máy đo nào đỏ (`PASS-VISIBLE`). Ô `4 hidden` chưa đo được vì máy bàn không có bài kiểm tra ẩn; rủi ro còn lại nằm ở tầng vận hành (nhân viên có thật sự chịu kiểm mẫu 10%) chứ không ở tầng code.
+- Cổng vòng 1 (mốc prepared) đã đỡ được gì trước khi bàn biết sự cố, và bỏ sót gì: Đỡ được phần lớn tác hại kỹ thuật: hoàn sai giảm 6.845.000đ → 1.140.000đ, lỗi hãng oan 35 → 5, hàng chờ ùn 36 ca → 0, `pass_rate` 0,8654 → 0,96. Bỏ sót: phê duyệt không hợp lệ (ví dụ ca `S8-04`) vì vòng 1 chưa kiểm mã phê duyệt, và niềm tin của nhân viên (vẫn kiểm tay 100% nên chi phí 11.846đ > làm tay, ROI −0,93).
+- Report ghi "được phép cân nhắc Tiếp tục" hay "không đủ căn cứ"? Quyết định của bàn có khớp không: Report ghi "Được phép cân nhắc 'Tiếp tục'" và "Niềm tin của nhân viên duyệt (after, gói nhìn thấy): đạt". Quyết định Tiếp tục của bàn khớp. Đây mới là kết quả trên bộ nhìn thấy, chưa có bài kiểm tra ẩn.
+- Một thứ bộ thử hôm nay chưa đo, và nó ảnh hưởng quyết định ra sao: Chưa đo hành vi thật của nhân viên khi chuyển từ kiểm tay 100% sang kiểm mẫu 10%: mock chỉ cho biết chi phí nếu họ làm vậy. Nếu họ không chuyển thì chi phí quay lại khoảng 11.842đ và ROI −0,16, quyết định phải đổi sang Thu hẹp. Cũng chưa đo ngày chính sách `REFUND-v4` có hiệu lực (01/12/2026) và giờ cao điểm.
 
 **Ba dòng bắt buộc** (chép nguyên ba câu này sang `submission/submission.json`, mục `three_lines`)
-1. Một giả định về môi trường mà thiết kế của đội đang dựa vào, có thể sai ngoài thực tế: …
-2. Gate của đội chỉ GIẢM khả năng hay thực sự NGĂN được tác hại? Vì sao: …
-3. Vì data là mock, cần đo lại gì trong pilot thật trước Bước đánh giá 2: …
+1. Một giả định về môi trường mà thiết kế của đội đang dựa vào, có thể sai ngoài thực tế: Nhân viên CSKH (chị Hạnh) sẽ thật sự chuyển từ kiểm tay 100% sang kiểm mẫu 10% khi mỗi quyết định có ghi chú giải thích và người đứng tên là trưởng ca, và bảng `approvals` do chị cấp luôn được cập nhật đúng (`status`, `expires_at`, `max_vnd`). Nếu một trong hai sai thì chi phí vẫn khoảng 11.842đ/ticket (ROI −0,16) hoặc cổng phê duyệt chặn nhầm.
+2. Gate của đội chỉ GIẢM khả năng hay thực sự NGĂN được tác hại? Vì sao: Với tác hại "chi tiền bằng mã phê duyệt không hợp lệ" thì cổng `write_gate` NGĂN hẳn (chặn trước lệnh `issue_refund`, hoàn sai về 0đ), miễn bảng `approvals` đúng. Với tác hại "nhân viên mất niềm tin và kiểm tay hết" thì chỉ GIẢM khả năng, vì kết quả phụ thuộc con người chịu kiểm mẫu, không phải thứ code đảm bảo được.
+3. Vì data là mock, cần đo lại gì trong pilot thật trước Bước đánh giá 2: Tỉ lệ quyết định tự động nhân viên thật sự kiểm lại sau 2 tuần (mục tiêu ≤ 10%); `invalid_approval_guard_rate` trong ngày thật; chi phí mỗi ticket và ROI với lưu lượng và giờ cao điểm thật (nhất là sau 01/12/2026 khi `REFUND-v4` có hiệu lực); chất lượng thật của bảng `approvals` (hết hạn, thu hồi); và độ trễ chờ duyệt khi số ca chuyển người tăng.
