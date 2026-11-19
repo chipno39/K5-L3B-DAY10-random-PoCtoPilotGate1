@@ -93,3 +93,27 @@ Commit `4f4ba40`, `2052b90`, `f512b92` (Sign acceptance criteria), `e0c2401`, `1
 ### Exit ticket
 
 Học được: các cổng phòng ngừa ngoài model/prompt dựa trên nguồn sự thật (`tracking`, `policies`, `approvals`) ngăn được lỗi chìm không đảo ngược hiệu quả hơn việc sửa prompt, nhưng an toàn kỹ thuật mới là điều kiện cần — sự cố `S8` cho thấy nếu thiếu giải thích quyết định và quy trình kiểm mẫu để hiệu chỉnh lòng tin thì con người sẽ kiểm tay 100% và làm chi phí vượt làm tay. Còn chưa chắc: tỷ lệ kiểm mẫu 10% hiện tại có đủ để bắt kịp các lỗi cấp phê duyệt hợp lệ về mặt hình thức nhưng sai nghiệp vụ ở quy mô nhiều depot hay không.
+
+
+## QuachNgocHuy-2A202603956
+
+### Phần việc phụ trách
+
+Vai Kỹ sư cổng 2. Vòng 1: Phiếu B: B0 dòng 1, B1 (câu 2.1: đo mốc base baseline, phân tích ngưỡng an toàn và chi phí theo kho/hãng, cân nhắc tự chặn vs người duyệt), B2 (câu 2.2: trace `T-002@55`, bảng soát lỗi và hướng xử lý lỗi chìm), B7.2 (câu 2.7: hai bước tránh overfit), B7.3 (câu 2.8: behavioral test với 2 ticket hiểm adhoc). Vòng 2 (thẻ S8): Dò trace sự cố `S8-01@11`, `S8-02@11`, `S8-04@11`; Phiếu C: C2 (câu 3.1: phân tích hazard, bảng soát lỗi 3 phần, tác hại cho trưởng ca và LogiX), C6 (câu 3.4: fault tree trước khi sửa); code chỉ số theo dõi mới `invalid_approval_guard_rate` trong `lab10/monitors.py`; Phiếu C: C8 (câu 3.6: production telemetry), C9 (câu 3.7: cập nhật fault tree sau khi sửa). File: `lab10/monitors.py`, `templates/form-b-evaluation-gates.md`, `templates/form-c-incident.md`.
+
+### Đóng góp cụ thể
+
+- Chạy mốc baseline `R-base-before-20261119-150830-5299ea`, phân tích kết quả vi phạm 2 ngưỡng an toàn (hoàn sai 20.000đ và 1 lỗi hãng oan) do `T-002@55`; phát hiện phân khúc kho HCM và hãng VNX có số liệu xấu nhất; đề xuất giải pháp kết hợp giữa gate tự động và chuyển người duyệt.
+- Dò trace `T-002@55`, xác định bản chất lỗi chìm do model tự ý ưu tiên số ngày trễ khách khai đè lên tracking DB; đề xuất nguyên tắc xây dựng gate dựa trên nguồn sự thật (tracking DB, policy) thay vì tin tưởng đầu vào chưa kiểm chứng của người dùng.
+- Đề xuất 2 bước cụ thể chống overfit vào bộ test có sẵn; thiết kế 1 behavioral test với 2 ticket hiểm adhoc (`O-1002`/`C-02` claim 9 ngày và `O-1001`/`C-01` claim 20 ngày) chạy bằng `lab10.trace --adhoc` để kiểm chứng tính chất: lời khai của khách không được tự tạo ra hoàn tiền hay lỗi hãng.
+- Vòng 2 (thẻ S8): Dò trace 3 ca vi phạm (`S8-01`, `S8-02`, `S8-04`), vạch rõ nguyên nhân gốc là agent dùng `approval_id` không hợp lệ (đã dùng, hết hạn, lệch ticket/đơn hàng), gây ra lỗi chìm làm trưởng ca CSKH NV-HANH bị đứng tên sai và mất niềm tin.
+- Trực tiếp lập trình hàm telemetry `invalid_approval_guard_rate` trong `lab10/monitors.py` và đăng ký vào `MONITORS`: theo dõi tỷ lệ trial bị guard chặn do approval thiếu/không rõ/không hợp lệ từ sự kiện `trial.events`; kiểm tra giá trị đạt 0.0 trên base và 0.04 trên thẻ S8.
+- Xây dựng Fault Tree trước khi sửa (C6) và cập nhật Fault Tree sau khi sửa (C9), phân định rõ 3 tầng bảo vệ: tầng chặn (`write_gate` kiểm duyệt approval), tầng phát hiện (`invalid_approval_guard_rate`), và tầng con người/vận hành (`decision_note` kết hợp kiểm mẫu 10%).
+
+### Bằng chứng
+
+Commit `3867586` (Phiếu B: B0, B1, B2), `ee58b76` (Phiếu B: B7.2, B7.3), `21b935a` (code `lab10/monitors.py`, Phiếu C: C2, C6, C8, C9). Mã lần chạy: `R-base-before-20261119-150830-5299ea` (đo mốc base baseline), `R-S8-grade-20261119-161707-71e54a` (kiểm tra fault tree và monitor sau sửa), `R-S8-after-20261119-165233-f03b12`, `R-S8-grade-20261119-171032-f03b12` (`PASS-VISIBLE`).
+
+### Exit ticket
+
+Học được: Lỗi chìm (silent failure) do model tự suy diễn hoặc dùng mã duyệt không hợp lệ rất nguy hiểm vì không biểu hiện lỗi cú pháp mà âm thầm gây thiệt hại cho bên thứ ba và làm mất niềm tin vận hành; telemetry như `invalid_approval_guard_rate` là công cụ sống còn để theo dõi sức khỏe hệ thống ở production khi không có nhãn ground truth. Còn chưa chắc: Monitor hiện tại mới chỉ bắt được các vi phạm hình thức của mã phê duyệt (hạn dùng, trạng thái, khớp ticket), chưa thể nhận diện được các mã hợp lệ về mặt kỹ thuật nhưng bị phê duyệt sai quy trình nghiệp vụ ngoài thực tế; cần kết hợp chặt chẽ giữa giám sát tự động và quy trình kiểm mẫu của con người.
