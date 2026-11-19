@@ -308,10 +308,10 @@ Mỗi con số kèm một câu lý do, lấy từ `data/world.json` → `ops_lim
 
 | Khoá | Giá trị bàn đặt | Lý do (một câu, có số) |
 |---|---|---|
-| `business.daily_refund_cap_vnd` | | |
-| `business.cost_budget_per_ticket_vnd` | | |
-| `business.pilot_scope` (all / warehouse / percent) | | |
-| `business.roi_min` | | |
+| `business.daily_refund_cap_vnd` | 1.800.000 | Ngân sách hoàn tự động mỗi ngày của Finance là 2.000.000đ (`ops_limits.daily_auto_refund_budget_vnd`); đặt thấp hơn 10% để còn đệm 200.000đ cho ngày có nhiều ca, vượt trần thì chuyển người duyệt chứ không tự hoàn. |
+| `business.cost_budget_per_ticket_vnd` | 1.500 | Trần tiền LLM cho một ticket đã thống nhất với Ops và Finance là 1.500đ (`ops_limits.max_llm_cost_per_ticket_vnd`); chi phí nền tảng 200đ cộng đọc, kiểm chính sách và xác nhận vẫn nằm dưới số này với ticket thường. |
+| `business.pilot_scope` (all / warehouse / percent) | `warehouse`: HN, HCM (loại HCM-B2B, CT, DN) | Pilot chạy ở 2 depot; chọn 2 kho đơn lẻ vì kho sỉ `HCM-B2B` có đơn từ 2.000.000đ, vượt hạn mức 300.000đ/khách/ngày (`max_auto_refund_per_customer_per_day_vnd`) nên gần như ca nào cũng phải có người duyệt. *(Giả định: hai depot là HN và HCM, cần cả nhóm xác nhận.)* |
+| `business.roi_min` | 0,5 | ROI = (tiền làm tay − chi phí − hoàn sai) / chi phí; làm tay tốn 10.000đ/ticket (`manual_cost_per_ticket_vnd`), nên chi phí 6.667đ mỗi ticket cho ROI đúng 0,5; khớp ngưỡng `cost_per_ticket_vnd_max` 6.000đ đã ký (ứng với ROI khoảng 0,67). |
 
 ### B7.5 · Câu 2.10 · Cổng con người, vận hành, pháp lý + Runbook phần 1–3
 
