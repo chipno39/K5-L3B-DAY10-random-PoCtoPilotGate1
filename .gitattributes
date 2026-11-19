@@ -1,5 +1,7 @@
 config/acceptance_criteria.json -text
 config/acceptance_criteria.lock -text
+config/operating_gates.round1.json -text
+config/round1.lock -text
 data/** -text
 incidents/** -text
 lab10/** -text
