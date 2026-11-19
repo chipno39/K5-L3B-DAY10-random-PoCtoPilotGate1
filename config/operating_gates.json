@@ -19,8 +19,8 @@
       "Thời gian chờ người duyệt vượt 60 phút hoặc có ca ùn: dừng nhận ca tự động mới, thu hẹp pilot hoặc chuyển toàn bộ sang xử lý thủ công cho tới khi hàng chờ về 0."
     ],
     "alert_channel": "Kênh trực Ops của pilot (xác nhận tên/kênh liên hệ trước go-live); dự phòng gọi trực tiếp NV-TUNG.",
-    "decision_note": false,
-    "review_sampling_pct": 0
+    "decision_note": true,
+    "review_sampling_pct": 10
   },
   "legal": {
     "pii_fields_blocked_to_third_party": [

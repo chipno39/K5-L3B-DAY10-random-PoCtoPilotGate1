@@ -32,8 +32,10 @@ Mỗi lệnh `lab10.eval` và `lab10.grade` tự ghi một dòng vào `runs/jour
 |---|---|---|---|---|---|---|---|---|
 | 1 | `R-S8-prepared-20261119-160905-69a4dd` (grade `R-S8-grade-20261119-160903-69a4dd`) | S8 · prepared | nhận thẻ đã bốc, chưa sửa thêm (đúng cổng vòng 1 đã chốt) | 0.96 | 0.96 | 1.140.000đ · 5 · 0 | 1.0 | Cổng vòng 1 đỡ phần lớn (giảm hoàn sai 6,845tr → 1,14tr; 0 ca ùn), nhưng còn lọt `S8-04` (phê duyệt sai) và nhân viên vẫn kiểm tay 100% nên chi phí 11.846đ > làm tay. |
 | 2 | `R-S8-after-20261119-161239-4fcc2b` | S8 · after | cổng vòng 2 (`guards.py`): kiểm tra `approval_id` hợp lệ (`valid`, hạn, đúng ticket/đơn/khách, `≤ max_vnd`) | 1.0 [1.0, 1.0] | 1.0 | 0đ · 0 · 0 | 0.04 | Kỹ thuật sạch 100% (`125/125` đạt, 0 hoàn sai, 0 lỗi hãng oan), nhưng chi phí vẫn 11.842đ (ROI -0.16) vì chưa bật `decision_note` và `review_sampling_pct`. |
-| 3 | | S8 · after | | | | | | |
-| 4 | `R-base-after-20261119-161239-4fcc2b` | base · after | (kiểm không regression sau cổng approval_id) | 1.0 [1.0, 1.0] | 1.0 | 0đ · 0 · 0 | 0.2308 | Không regression (`65/65` ca bộ nền đều đạt, 9/9 ngưỡng giữ nguyên). |
+| 3 | `R-S8-after-20261119-163920-fa0858` | S8 · after | `operations.decision_note`: false → true; sampling vẫn 0% | 1.0 [1.0, 1.0] | 1.0 | 0đ · 0 · 0 | 1.0 | Có ghi chú giải thích, nhưng thiếu mức kiểm mẫu tối thiểu nên nhân viên vẫn kiểm tay 100%; chi phí 6.178đ/ticket, ROI 0.62. |
+| 4 | `R-S8-after-20261119-163929-99d351` | S8 · after | `operations.review_sampling_pct`: 0% → 10% (decision note đã bật) | 1.0 [1.0, 1.0] | 1.0 | 0đ · 0 · 0 | 0.2 | Đủ điều kiện tin cậy; nhân viên kiểm mẫu 10%, chờ lâu nhất 1 phút, không ùn; chi phí 2.978đ/ticket, ROI 2.36. |
+| 5 | `R-base-after-20261119-163938-99d351` | base · after | Regression sau thay đổi quy trình kiểm mẫu | 1.0 [1.0, 1.0] | 1.0 | 0đ · 0 · 0 | 0.3077 | Không có ca bộ nền mới hỏng (`65/65` đạt); không hoàn sai, lỗi hãng oan hay lộ PII; chi phí 5.550đ/ticket, ROI 0.8. |
+| 6 | `R-S8-grade-20261119-163942-99d351` | S8 · grade (ba mốc) | Tự kiểm cuối sau cổng approval, decision note và sampling 10% | after: 1.0 [1.0, 1.0] | 1.0 | 0đ · 0 · 0 | 0.2 | After sạch, các ngưỡng hiển thị đạt; nhưng grade báo mốc prepared không dùng được vì snapshot cổng vòng 1 đã bị sửa sau khi chốt (integrity). |
 
 ---
 
@@ -385,26 +387,28 @@ Ghi các dòng đổi sau sự cố. Mỗi dòng vẫn phải có một PIC có 
 
 | # nhóm | Trạng thái mới (Xong / Chưa / Không áp dụng) | Bằng chứng mới (mã lần chạy, mục phiếu, số trong report) | PIC |
 |---|---|---|---|
-| | | | |
-| | | | |
+| 1 · Chất lượng | Xong | `R-S8-grade-20261119-163942-99d351`: after pass_rate/pass_k=1.0; 0đ hoàn sai, 0 lỗi hãng oan, 0 PII; không có ticket S8 còn hỏng trên bộ nhìn thấy. | Trần Thị Hạnh (NV-HANH) |
+| 4 · Quyền hạn | Chưa | `R-S8-grade-20261119-163942-99d351`: monitor `invalid_approval_guard_rate` phát hiện 0.04 nỗ lực dùng mã không hợp lệ và after không có hoàn sai; tuy nhiên grade báo snapshot prepared không dùng được do integrity. | Lê Thanh Tùng (NV-TUNG) |
+| 7 · Vận hành | Chưa | `R-S8-grade-20261119-163942-99d351`: note bật, sample 10%, nhân viên kiểm 10%, chờ lâu nhất 1 phút, 0 ùn, 2.978đ/ticket, ROI 2.36; cần xác nhận kênh cảnh báo thật và xử lý lỗi integrity trước go-live. | Lê Thanh Tùng (NV-TUNG) |
+| 8 · Con người, pháp lý | Xong | `R-S8-grade-20261119-163942-99d351`: 0 lần lộ PII và 0 lỗi hãng oan ở after; staff trust đạt khi `decision_note=true`, sampling=10%, approver=`NV-HANH`, không có phê duyệt không hợp lệ được sử dụng. | Phạm Kiều Oanh (NV-OANH) |
 
 ### Runbook 4 · Sau sự cố trên thẻ (vòng 2)
 
 | Câu hỏi | Trả lời |
 |---|---|
-| Tín hiệu nào ở Runbook 2 (Phiếu B mục B7.5) lẽ ra phải báo trước sự cố này? Nó đã có chưa? | |
-| Bàn thêm hoặc đổi ngưỡng nào, từ bao nhiêu thành bao nhiêu? | |
-| Bàn đổi gì về **người** (số người trực, ai đứng tên, ai được gọi)? | |
-| Bàn đổi gì về **phạm vi** hoặc **quy trình** (kiểm mẫu, ghi chú giải thích, trần)? | |
-| Nói gì với bên thứ ba bị ảnh hưởng (hãng, shop, người nhận, nhân viên duyệt), ai nói, trong bao lâu? | |
-| Dữ liệu cá nhân nào đã rời hệ thống mà không thu hồi được? Báo cho ai? | |
-| Sự cố lộ ra trước qua số máy đo, phản hồi của người, hay đọc nội dung? Nguồn nào bàn chưa có? | |
+| Tín hiệu nào ở Runbook 2 (Phiếu B mục B7.5) lẽ ra phải báo trước sự cố này? Nó đã có chưa? | Báo cáo về phê duyệt không hợp lệ và tỷ lệ nhân viên kiểm lại 100%/chi phí cao lẽ ra phải cảnh báo; Runbook 2 ban đầu chưa có tín hiệu kiểm tính hợp lệ của `approval_id` hay điều kiện lòng tin. Sau sửa, monitor `invalid_approval_guard_rate` báo các lần guard chặn mã không hợp lệ; không nhầm lần bị chặn với lần chi tiền sai. |
+| Bàn thêm hoặc đổi ngưỡng nào, từ bao nhiêu thành bao nhiêu? | `decision_note`: false → true; `review_sampling_pct`: 0% → 10% (mức tối thiểu theo `staff_behavior.trust_conditions`). Chỉ chuyển sang kiểm mẫu khi không có khoản đã chi dùng phê duyệt sai; nếu phát hiện khoản sai thì kiểm tay 100% và điều tra. |
+| Bàn đổi gì về **người** (số người trực, ai đứng tên, ai được gọi)? | Giữ 1 người trực, công suất 6 ca/giờ; người duyệt đứng tên vẫn là Trần Thị Hạnh (`NV-HANH`); Lê Thanh Tùng (`NV-TUNG`) là PIC giữ công tắc dừng. Không tăng nhân sự thường trực vì report sau sửa không có ùn và chi phí đã giảm. |
+| Bàn đổi gì về **phạm vi** hoặc **quy trình** (kiểm mẫu, ghi chú giải thích, trần)? | Giữ phạm vi 100% ticket tại HN/HCM; kèm ghi chú cho từng quyết định và kiểm mẫu 10%. Trước khi bật mức 10%, kiểm `approval_id` phải đúng trạng thái `valid`, chưa hết hạn, đúng ticket/đơn/khách và số tiền không vượt `max_vnd`; nếu không đủ điều kiện thì chuyển người/kiểm tay 100%. |
+| Nói gì với bên thứ ba bị ảnh hưởng (hãng, shop, người nhận, nhân viên duyệt), ai nói, trong bao lâu? | Không có thiệt hại bên ngoài mới ở mốc after; NV-TUNG thông báo kết quả rà soát cho NV-HANH trong cùng ca và giải thích điều kiện kiểm mẫu. Nếu phát hiện khoản chi sai, NV-OANH liên hệ shop/khách liên quan trong 1 ngày làm việc theo quy trình khiếu nại; không tuyên bố hoàn tất thu hồi nếu chưa đối soát. |
+| Dữ liệu cá nhân nào đã rời hệ thống mà không thu hồi được? Báo cho ai? | Report after ghi 0 lần lộ PII; chưa có dữ liệu cá nhân nào được xác nhận đã gửi sai. Nếu điều tra phát hiện sự cố, báo ngay NV-TUNG và NV-OANH, lưu payload/log và thực hiện quy trình sự cố riêng tư; không tự tuyên bố có thể thu hồi bản đã nhận. |
+| Sự cố lộ ra trước qua số máy đo, phản hồi của người, hay đọc nội dung? Nguồn nào bàn chưa có? | Lộ ra trước qua phản hồi của Trần Thị Hạnh sau kiểm toán; xác nhận bằng `approval_used` đối chiếu `approvals`. Thiếu cảnh báo sớm gắn mã phê duyệt với trạng thái, hạn, phạm vi và số tiền; nay có `invalid_approval_guard_rate`, nhưng pilot thật vẫn cần audit log phê duyệt và phản hồi người duyệt. |
 
 ### Runbook 5 · Ba kịch bản "nếu … thì …" cho tuần đầu chạy thử thật
 
-1. Nếu số ticket tăng gấp ___ lần trong một giờ thì: …
-2. Nếu nhà cung cấp LLM lỗi quá ___ phút thì: …
-3. Nếu người duyệt báo không tin một quyết định của trợ lý thì: …
+1. Nếu số ticket tăng gấp **3** lần trong một giờ thì: NV-TUNG theo dõi hàng chờ; khi có 3 ca chờ hoặc chờ lâu nhất 30 phút thì gọi người hỗ trợ và báo NV-HANH; nếu chờ quá 60 phút/ùn thì dừng nhận ca tự động mới và chuyển thủ công.
+2. Nếu nhà cung cấp LLM lỗi quá **5** phút thì: NV-TUNG tắt các thao tác ghi tự động bị ảnh hưởng, không dùng kết quả dở dang để hoàn/ghi lỗi, chuyển ticket sang người; chỉ bật lại sau khi dịch vụ ổn định, kiểm tra trace và NV-HANH đồng ý.
+3. Nếu người duyệt báo không tin một quyết định của trợ lý thì: NV-TUNG chuyển `review_sampling_pct` lên **100%** tạm thời (và tắt `issue_refund` nếu có nghi vấn tiền đã ghi sai), NV-HANH rà ghi chú và căn cứ phê duyệt; chỉ hạ về **10%** sau khi xác nhận không có phê duyệt không hợp lệ được sử dụng, ghi chú quyết định bật, người duyệt đúng là `NV-HANH` và NV-HANH chấp thuận.
 
 ---
 
