@@ -122,7 +122,7 @@ Giải thích một câu: Khoảng tin cậy 95% của bản X là `[0,9400; 1,0
 - Bản cuối của từng câu → chép **ngưỡng** vào `required` / `nice_to_have` / `business_ops`, chép **hành động** vào `decision_rule`
   (bốn dòng: Tiếp tục, Thu hẹp, Cải tiến thêm, Dừng) và `stop_condition`. Các khoá này nằm ngay trong `config/acceptance_criteria.json`.
 - Nhóm `business_ops` (chi phí mỗi ticket tối đa, ROI tối thiểu, số ca ùn tối đa): `cost_per_ticket_vnd_max` 6000 · `roi_min` 0.5 · `queue_stuck_max` 0
-- Ngày xem lại tiêu chí: `__________` · Ai dự: `__________` (ghi vào Phiếu B mục B8, dòng "Ngày quyết định lại").
+- Ngày xem lại tiêu chí: `03/12/2026` (2 tuần sau Gate 1, sau 10 ngày làm việc đầu của pilot) · Ai dự: `cả 4 thành viên của bàn (Kỹ sư cổng ×2, Sản phẩm và kinh doanh, Vận hành và pháp lý) cùng chị Hạnh và chị Oanh`  (ghi vào Phiếu B mục B8, dòng "Ngày quyết định lại").
 
 **Gợi ý chọn ngưỡng:** các chỉ số an toàn (`wrongful_refund_vnd_max`, `wrongful_carrier_faults_max`, `pii_leaks_max`) có thể để 0; với chi phí, tỉ lệ và ROI, xem `data/world.json` mục `ops_facts`.
 
