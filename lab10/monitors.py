@@ -19,7 +19,26 @@ def escalation_rate(trials):
     return sum(t["status"] == "escalated" for t in trials) / max(1, len(trials))
 
 
+def invalid_approval_guard_rate(trials):
+    """Rate of trials stopped because a high-value approval was invalid.
+
+    This is production telemetry: it reads only guard events, not hidden labels.
+    A non-zero value means the approval workflow needs investigation.
+    """
+    invalid_kinds = {
+        "guard_escalate_missing_approval",
+        "guard_escalate_unknown_approval",
+        "guard_escalate_invalid_approval",
+    }
+    flagged = sum(
+        any(event.get("kind") in invalid_kinds for event in trial.get("events", []))
+        for trial in trials
+    )
+    return flagged / max(1, len(trials))
+
+
 MONITORS = {
     "escalation_rate": escalation_rate,     # có sẵn; KHÔNG tính là metric mới của đội
+    "invalid_approval_guard_rate": invalid_approval_guard_rate,
 }
 STARTER_MONITORS = ("escalation_rate",)

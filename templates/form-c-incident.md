@@ -76,33 +76,33 @@ python3 -m lab10.trace --suite Sx --ticket <ID> --seed 11
 Ba loại lỗi: **giới hạn của hệ thống** · **lỗi ngữ cảnh** · **lỗi chìm** (cả người dùng lẫn hệ thống đều không nhận ra; nguy hiểm nhất,
 người chịu hại thường là bên thứ ba). Định nghĩa đầy đủ và ví dụ: Phiếu B mục B2.
 
-**Tác hại của thẻ:** cho ai `____` · đo bằng gì `____` · bao nhiêu ở mốc base `____`
+**Tác hại của thẻ:** cho trưởng ca CSKH, người đứng tên duyệt và LogiX · đo bằng tiền hoàn oan, lỗi hãng oan, tỷ lệ kiểm tay và chi phí/ticket · ở mốc base: hoàn oan 6.845.000đ, 35 lỗi hãng oan, kiểm tay 100%, chi phí 11.225đ/ticket.
 
 ### Phần 1 · Ghi lỗi (bằng chứng là mã ticket@seed và dòng trace, không tả chung chung)
 
 | # | Lỗi: người ta thấy gì (dán dòng trace / sổ cái) | Ai gặp, ai chịu | Hệ trọng (thấp / cao) | Loại lỗi (giới hạn hệ thống / ngữ cảnh / chìm) |
 |---|---|---|---|---|
-| 1 | | | | |
-| 2 | | | | |
-| 3 | | | | |
+| 1 | `S8-01@11`, trace 05 `approval_used A-2801` → trace 06 hoàn 230.000đ; `world_patch.json` cho thấy mã có `status: used` và thuộc `ticket_id: T-OLD-2801`, nhưng nhãn yêu cầu escalate/0đ. | Trưởng ca NV-HANH bị đứng tên một khoản không phê duyệt; LogiX và hãng VNX chịu hậu quả tiền/đối soát. | cao | lỗi chìm |
+| 2 | `S8-02@11`, trace 05 `approval_used A-2802` → trace 06 hoàn 230.000đ; mã ghi `expires_at: 2026-11-10`, sớm hơn ngày chạy, nhưng vẫn được dùng; nhãn yêu cầu escalate/0đ. | NV-HANH phải giải trình cho phê duyệt hết hạn; LogiX và hãng DNB nhận bản ghi sai. | cao | lỗi chìm |
+| 3 | `S8-04@11` prepared, trace 06 `approval_used A-2804` → trace 07 hoàn 228.000đ; mã thực tế thuộc `T-OLD-2808` / `O-2808`, không phải S8-04 / O-2804. | Khách được chi tiền không được phép; NV-HANH mất niềm tin và bắt cả ca kiểm tay. | cao | lỗi chìm |
 
 ### Phần 2 · Tìm nguồn (đánh dấu câu nào đúng với từng lỗi)
 
 | Câu hỏi | Lỗi 1 | Lỗi 2 | Lỗi 3 |
 |---|---|---|---|
-| **Đầu vào:** hệ thống có tự diễn giải / sửa đầu vào của người dùng theo cách họ không lường? Có đặt sai trọng số cho một lời nói hay tín hiệu của người dùng? | | | |
-| **Độ liên quan:** hệ thống có thiếu dữ liệu cần để quyết đúng? Dữ liệu vào có nhiễu, thiếu ổn định? | | | |
-| **Thứ bậc hệ thống:** có hai hệ thống cùng ghi / cùng theo dõi một thứ mà không rõ bên nào là chủ (ví dụ CSKH hoàn tay và trợ lý cùng ghi sổ)? | | | |
-| **Trạng thái hỏng:** nhiều lỗi cộng lại có làm tính năng không dùng được (ví dụ LLM lỗi liên tiếp)? | | | |
+| **Đầu vào:** hệ thống có tự diễn giải / sửa đầu vào của người dùng theo cách họ không lường? Có đặt sai trọng số cho một lời nói hay tín hiệu của người dùng? | Không phải câu chữ khách: agent lấy mã duyệt cũ mà không kiểm trạng thái. | Không phải câu chữ khách: agent dùng mã dù ngày hết hạn đã qua. | Không phải câu chữ khách: agent dùng mã gắn với đối tượng khác. |
+| **Độ liên quan:** hệ thống có thiếu dữ liệu cần để quyết đúng? Dữ liệu vào có nhiễu, thiếu ổn định? | Có dữ liệu `status`, `ticket_id` trong approvals nhưng gate vòng 1 không đọc. | Có dữ liệu `expires_at` nhưng gate vòng 1 không đọc. | Có dữ liệu `ticket_id`, `order_id`, `customer_id` nhưng gate vòng 1 không đối chiếu. |
+| **Thứ bậc hệ thống:** có hai hệ thống cùng ghi / cùng theo dõi một thứ mà không rõ bên nào là chủ (ví dụ CSKH hoàn tay và trợ lý cùng ghi sổ)? | Có: mã do trưởng ca quản lý bị agent coi như quyền chi vô điều kiện. | Có: thời hạn phê duyệt của trưởng ca không có hiệu lực trong tool chi tiền. | Có: quyền duyệt bị tách rời khỏi ticket/đơn/khách mà nó cấp cho. |
+| **Trạng thái hỏng:** nhiều lỗi cộng lại có làm tính năng không dùng được (ví dụ LLM lỗi liên tiếp)? | Có: hậu quả không hiện với khách nên chỉ lộ khi kiểm toán, làm CSKH kiểm tay mọi ca. | Có: một phê duyệt hết hạn đã đủ làm người đứng tên không tin kết quả tự động. | Có: chi oan + mất niềm tin + kiểm tay 100% làm chi phí cao hơn làm tay. |
 
 ### Phần 3 · Hướng xử lý (mỗi lỗi một ô)
 
 | | Lỗi 1 | Lỗi 2 | Lỗi 3 |
 |---|---|---|---|
-| Vì sao người gặp coi đây là lỗi | | | |
-| Kiểu giải pháp: phản hồi cho người dùng / trao quyền kiểm soát cho người / khác | | | |
-| Đường đi của người sau khi có giải pháp (ví dụ: ticket chuyển sang người duyệt → duyệt → khách được trả lời) | | | |
-| Hệ thống học được gì (tín hiệu ghi lại để theo dõi: tên metric trong `monitors.py`) | | | |
+| Vì sao người gặp coi đây là lỗi | Mã đã dùng lại vẫn khiến NV-HANH bị đứng tên chi tiền; audit không truy được quyền hợp lệ. | Hết hạn là điều kiện thu hồi quyền nhưng hệ thống vẫn thanh toán. | Phê duyệt cho ticket/đơn khác bị chuyển nhầm thành quyền chi cho S8-04. |
+| Kiểu giải pháp: phản hồi cho người dùng / trao quyền kiểm soát cho người / khác | Trao quyền cho người: gate chặn/escalate mọi mã đã dùng hoặc sai đối tượng. | Trao quyền cho người: gate escalate nếu hết hạn. | Trao quyền cho người: gate yêu cầu mã khớp ticket, đơn, khách và hạn mức. |
+| Đường đi của người sau khi có giải pháp (ví dụ: ticket chuyển sang người duyệt → duyệt → khách được trả lời) | Hoàn vượt auto-limit → gate phát hiện mã invalid → hàng chờ NV-HANH → cấp/duyệt mã đúng → mới ghi tiền. | Hoàn vượt auto-limit → gate thấy mã hết hạn → NV-HANH cấp lại mã còn hiệu lực hoặc từ chối → phản hồi khách. | Hoàn vượt auto-limit → gate thấy sai ticket/đơn/khách → chuyển NV-HANH xác minh → chỉ ghi tiền khi mã khớp. |
+| Hệ thống học được gì (tín hiệu ghi lại để theo dõi: tên metric trong `monitors.py`) | `invalid_approval_guard_rate` tăng khi guard gặp approval đã dùng. | `invalid_approval_guard_rate` tăng khi guard gặp approval hết hạn. | `invalid_approval_guard_rate` tăng khi guard gặp approval sai đối tượng/hạn mức. |
 
 Yêu cầu: ít nhất **hai lỗi có nguồn khác nhau** ở phần 2, và ít nhất một lỗi được xếp đúng là **lỗi chìm**.
 
@@ -263,7 +263,7 @@ Vì sao có thể sai: …
 
 <a id="c6"></a>
 
-## C6 · Câu 3.4 · Fault tree TRƯỚC khi sửa (mã lần chạy: `__________`)
+## C6 · Câu 3.4 · Fault tree TRƯỚC khi sửa (mã lần chạy: `R-S8-grade-20261119-160903-69a4dd`, prepared)
 
 **Khung tư duy.** Đi từ **tác hại** ngược về nguyên nhân, không đi từ lỗi mình tình cờ thấy. Mỗi tầng hỏi "điều gì phải xảy
 ra thì điều trên mới xảy ra", nối bằng **HOẶC** (một trong các nhánh là đủ) hoặc **VÀ** (phải đồng thời). Một biện pháp tốt
@@ -278,21 +278,21 @@ thường biến một nhánh HOẶC thành VÀ: tác hại chỉ còn xảy ra 
 Ít nhất hai nhánh ở hai tầng khác nhau (kỹ thuật, kinh doanh, con người); mỗi lá có bằng chứng (ticket@seed, trường dữ liệu, hoặc một dòng của report).
 
 ```
-[ĐỈNH] Tác hại: ______________________________ (cho ai: __________, đo bằng: __________)
+[ĐỈNH] Tác hại: CSKH không tin trợ lý và kiểm tay 100% (cho NV-HANH/LogiX; đo bằng kiểm tay 100%, chi phí 11.846đ/ticket, ROI -0.93)
  └─ HOẶC
- ├─ [1] ______________________________ tầng: đầu vào / data / hành động / quyền hạn / vận hành / kinh doanh
- │ └─ vì: ________________________ bằng chứng: ticket ______@seed ____
- ├─ [2] ______________________________ tầng: ______
- │ └─ vì: ________________________ bằng chứng: ticket ______@seed ____
- └─ [3] ______________________________ tầng: ______
- └─ vì: ________________________ bằng chứng: ______
+ ├─ [1] Agent chi khoản vượt auto-limit bằng approval không còn hiệu lực · tầng: quyền hạn / hành động
+ │ └─ vì: vòng 1 không đối chiếu status, hạn, ticket, đơn, khách hoặc max_vnd · bằng chứng: S8-01@11, S8-02@11, S8-04@11
+ ├─ [2] Người duyệt không có bằng chứng giải thích để tin kết quả · tầng: vận hành / con người
+ │ └─ vì: `decision_note=false`, kiểm mẫu 0% nên NV-HANH yêu cầu kiểm tay 100% · bằng chứng: staff_behavior trong S8/world_patch.json; report prepared
+ └─ [3] Chi phí kiểm tay làm pilot đắt hơn làm tay · tầng: kinh doanh / vận hành
+ └─ vì: 25 ca/ngày vào hàng chờ và mọi quyết định tự động bị recheck · bằng chứng: report prepared chi phí 11.846đ/ticket, ROI -0.93
 ```
 
 | Lá | Specification bị vi phạm (phần mềm phải làm gì) | Giả định môi trường đã sai (thế giới ngoài phần mềm) |
 |---|---|---|
-| [1] | | |
-| [2] | | |
-| [3] | | |
+| [1] | Hoàn vượt `auto_limit_vnd` chỉ được ghi khi approval tồn tại, valid, chưa hết hạn, khớp ticket/đơn/khách và không vượt `max_vnd`. | Mã phê duyệt luôn còn hiệu lực, đúng đối tượng và chưa được dùng/thu hồi. |
+| [2] | Quyết định tự động phải có giải thích và cơ chế kiểm mẫu theo điều kiện trust đã thỏa thuận. | Một quyết định đúng về kỹ thuật tự nó đủ để CSKH tin và không kiểm tay. |
+| [3] | Hệ thống phải giữ chi phí/ticket và ROI trong ngưỡng pilot đã ký. | Kiểm tay 100% vẫn rẻ hơn/không ảnh hưởng đến ROI của pilot. |
 
 **Ví dụ mẫu một nhánh (bộ nền, đừng chép):** đỉnh "hãng VNX nhận lỗi oan cho đơn O-1002" ← [1] agent dùng độ trễ 5 ngày ←
 model lấy số trong ticket đè lên DB (`T-002@55`). Spec bị vi phạm: độ trễ dùng để ghi lỗi phải lấy từ tracking DB. Giả định
@@ -330,36 +330,36 @@ Thẻ S5 dùng mục này cho một con số kinh doanh: chi phí mỗi ticket t
 
 | | Chỉ số theo dõi mới của bàn |
 |---|---|
-| **Tên trong `MONITORS`** | |
-| **Bước / hành vi được đo** | |
-| **Thước đo** (một câu, có đơn vị) | |
-| **Dữ liệu** (trường nào của trial, không có nhãn) | |
-| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | |
-| **Khung thời gian / ngưỡng báo động** | |
-| **Điểm mù** (chỉ số này KHÔNG thấy gì) | |
-| Giá trị trên bộ nền · trên thẻ (đọc mục `monitor` của report) | |
+| **Tên trong `MONITORS`** | `invalid_approval_guard_rate` |
+| **Bước / hành vi được đo** | Gate trước `issue_refund` phát hiện khoản vượt auto-limit có mã phê duyệt thiếu, không tồn tại hoặc không hợp lệ. |
+| **Thước đo** (một câu, có đơn vị) | Tỷ lệ trial có ít nhất một event guard chặn/escalate do approval không hợp lệ (đơn vị: %). |
+| **Dữ liệu** (trường nào của trial, không có nhãn) | `trial.events[].kind`: `guard_escalate_missing_approval`, `guard_escalate_unknown_approval`, `guard_escalate_invalid_approval`; không dùng nhãn pass/fail. |
+| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | Số trial có ≥1 event thuộc ba loại trên / tổng số trial; trial không có event tính 0, danh sách rỗng trả 0 thay vì lỗi. |
+| **Khung thời gian / ngưỡng báo động** | Tính theo mỗi ca/ngày pilot; bất kỳ giá trị > 0% đều báo NV-TUNG/NV-HANH vì một mã duyệt không hợp lệ đã là sự cố quyền hạn. |
+| **Điểm mù** (chỉ số này KHÔNG thấy gì) | Không phát hiện mã hợp lệ về hình thức nhưng được cấp sai do con người, cũng không đo lòng tin/chi phí kiểm tay nếu gate không phát tín hiệu. |
+| Giá trị trên bộ nền · trên thẻ (đọc mục `monitor` của report) | base after: `0.0`; S8 after: `0.04` (5/125 trial) — monitor sáng đèn trên sự cố. |
 
 ---
 
 <a id="c9"></a>
 
-## C9 · Câu 3.7 · Fault tree SAU khi sửa (mã lần chạy: `__________`)
+## C9 · Câu 3.7 · Fault tree SAU khi sửa (mã lần chạy: `R-S8-grade-20261119-161707-71e54a`)
 
 Vẽ lại cây ở C6. Ở mỗi nhánh đã xử lý, thêm một nút `VÀ [gate … hỏng]` và ghi:
 
 ```
-[ĐỈNH] ______________________________
+[ĐỈNH] CSKH không tin trợ lý và kiểm tay 100%
  └─ HOẶC
- ├─ [1] ______________ VÀ [gate ______ hỏng]
- ├─ [2] ______________ VÀ [gate ______ hỏng]
- └─ [3] ______________ (còn hở?)
+ ├─ [1] Approval thiếu/hết hạn/đã dùng/sai đối tượng/vượt hạn mức VÀ [gate `write_gate` kiểm approval hỏng]
+ ├─ [2] Approval invalid xuất hiện VÀ [`invalid_approval_guard_rate` không báo]
+ └─ [3] Người duyệt vẫn kiểm tay 100% khi chưa bật decision note + sampling (còn hở, thuộc config vận hành)
 ```
 
 | Nhánh | Gate (hàm trong `guards.py` / khoá config / metric trong `monitors.py`) | Tầng gate (phát hiện / chặn / giới hạn thiệt hại / vận hành) | Giảm hay ngăn? Vì sao | Nhánh còn hở |
 |---|---|---|---|---|
-| [1] | | | | |
-| [2] | | | | |
-| [3] | | | | |
+| [1] | `write_gate`: `lookup_approvals` kiểm `valid`, hạn, ticket/đơn/khách và `max_vnd` | chặn | Ngăn ghi tiền/lỗi hãng cho các mã invalid; `S8-04@11 after` chuyển người và sổ cái rỗng. | Nếu data approvals nguồn đã sai nhưng vẫn trông hợp lệ. |
+| [2] | `invalid_approval_guard_rate` | phát hiện | Không chặn một mình, nhưng báo ngay khi approval invalid xuất hiện (S8 0.04 so với base 0.0). | Không thấy approval hợp lệ hình thức nhưng phê duyệt sai về nghiệp vụ. |
+| [3] | `operations.decision_note` + `operations.review_sampling_pct` (Người 4 cập nhật) | vận hành | Chỉ giảm kiểm tay/mất niềm tin khi có giải thích và sampling đạt 10%; chưa có hiệu lực ở report hiện tại. | Có thể vẫn phải kiểm tay nếu nhân viên không tin sau sự cố mới. |
 
 ---
 
