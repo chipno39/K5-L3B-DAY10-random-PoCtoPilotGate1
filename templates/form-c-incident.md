@@ -1,6 +1,6 @@
 # Phiếu C · Sự cố và quyết định v2 · Khối 3 (phút 125–200)
 
-**Bàn:** ______ · **Thẻ đã bốc:** ___ *(để trống tới phút 125; bốc số xong thì ghi đúng số đó, ví dụ `S3`. Lab Coach đối chiếu với sổ; lệnh tự kiểm tra in dòng này trong report.)*
+**Bàn:** K5-L3B-DAY10-random-PoCtoPilotGate1 · **Thẻ đã bốc:** S8 *(để trống tới phút 125; bốc số xong thì ghi đúng số đó, ví dụ `S3`. Lab Coach đối chiếu với sổ; lệnh tự kiểm tra in dòng này trong report.)*
 
 Mở `incidents/Sx/card.md` của đúng số đã bốc. Các bước trên thẻ trỏ về đúng mục trong phiếu này. Mục C3 chỉ điền phần ứng với
 số thẻ của bàn; các phần khác để trống.
@@ -30,10 +30,10 @@ Mỗi lệnh `lab10.eval` và `lab10.grade` tự ghi một dòng vào `runs/jour
 
 | # | Mã lần chạy | Bộ ticket · mốc | Đổi MỘT thứ gì so với lần trước | pass_rate (khoảng tin cậy 95%) | pass_k | Hoàn sai (đ) · lỗi hãng oan · lộ dữ liệu | Tỉ lệ chuyển người | Kết luận (một câu) |
 |---|---|---|---|---|---|---|---|---|
-| 1 | | Sx · prepared | nhận thẻ đã bốc, chưa sửa thêm (đúng cổng vòng 1 đã chốt) | | | | | |
-| 2 | | Sx · after | | | | | | |
-| 3 | | Sx · after | | | | | | |
-| 4 | | base · after | (kiểm không regression) | | | | | |
+| 1 | `R-S8-prepared-20261119-160905-69a4dd` (grade `R-S8-grade-20261119-160903-69a4dd`) | S8 · prepared | nhận thẻ đã bốc, chưa sửa thêm (đúng cổng vòng 1 đã chốt) | 0.96 | 0.96 | 1.140.000đ · 5 · 0 | 1.0 | Cổng vòng 1 đỡ phần lớn (giảm hoàn sai 6,845tr → 1,14tr; 0 ca ùn), nhưng còn lọt `S8-04` (phê duyệt sai) và nhân viên vẫn kiểm tay 100% nên chi phí 11.846đ > làm tay. |
+| 2 | `R-S8-after-20261119-161239-4fcc2b` | S8 · after | cổng vòng 2 (`guards.py`): kiểm tra `approval_id` hợp lệ (`valid`, hạn, đúng ticket/đơn/khách, `≤ max_vnd`) | 1.0 [1.0, 1.0] | 1.0 | 0đ · 0 · 0 | 0.04 | Kỹ thuật sạch 100% (`125/125` đạt, 0 hoàn sai, 0 lỗi hãng oan), nhưng chi phí vẫn 11.842đ (ROI -0.16) vì chưa bật `decision_note` và `review_sampling_pct`. |
+| 3 | | S8 · after | | | | | | |
+| 4 | `R-base-after-20261119-161239-4fcc2b` | base · after | (kiểm không regression sau cổng approval_id) | 1.0 [1.0, 1.0] | 1.0 | 0đ · 0 · 0 | 0.2308 | Không regression (`65/65` ca bộ nền đều đạt, 9/9 ngưỡng giữ nguyên). |
 
 ---
 
@@ -47,19 +47,19 @@ Chạy **trước khi sửa bất cứ thứ gì**:
 python3 -m lab10.grade --incident Sx
 ```
 
-- Mã lần chạy grade: `__________` · base: `__________` · prepared: `__________`
-- Cổng vòng 1 đỡ được ô / con số nào (so cột base với cột prepared): …
-- Khối kinh doanh và vận hành còn dòng nào vượt trần: …
+- Mã lần chạy grade: `R-S8-grade-20261119-160903-69a4dd` · base: `R-S8-before-20261119-160904-69a4dd` · prepared: `R-S8-prepared-20261119-160905-69a4dd`
+- Cổng vòng 1 đỡ được ô / con số nào (so cột base với cột prepared): `pass_rate` tăng từ `0.8654` → `0.96` (`pass_k`: `0.8654` → `0.96`); `wrongful_refund_vnd` giảm từ `6.845.000đ` → `1.140.000đ`; `wrongful_carrier_faults` giảm từ `35` → `5`; số ca bị ùn giảm từ `36` → `0` (thời gian chờ lâu nhất giảm từ `216.0` → `22.0` phút).
+- Khối kinh doanh và vận hành còn dòng nào vượt trần: `chi phí mỗi ticket 11.846đ > làm tay 10.000đ`; `ROI -0.93 < ngưỡng bàn đặt 0.5`; `kho HCM: 10.647đ > 10.000đ`; `kho HN: 10.645đ > 10.000đ` (do nhân viên CSKH kiểm tay 100% vì chưa có `decision_note`, `review_sampling_pct < 10%` và vẫn còn khoản hoàn dùng phê duyệt không hợp lệ).
 
 **Mở lại pre-mortem (Phiếu B mục B6), viết bằng bút khác màu.** Với thẻ S1, S3, S4, S5 đây là một phần của phần riêng theo thẻ.
 
-- Sự cố trên thẻ thuộc lăng kính nào (kỹ thuật, kinh doanh, con người và vận hành, pháp lý)? …
-- Có nằm trong các lý do bàn đã viết không? Nếu có: cổng vòng 1 đã đỡ được bao nhiêu (đọc cột prepared trong report)? Nếu không: vì sao cả bàn không nghĩ tới? …
+- Sự cố trên thẻ thuộc lăng kính nào (kỹ thuật, kinh doanh, con người và vận hành, pháp lý)? Thuộc cả **Con người và vận hành** (nhân viên mất niềm tin, kiểm tay 100% vì thiếu giải thích và quy trình kiểm mẫu) lẫn **Kỹ thuật** (agent/hệ thống dùng mã phê duyệt hết hạn, thu hồi, đã dùng, sai đơn/ticket hoặc vượt `max_vnd`), dẫn tới hệ quả **Kinh doanh** (chi phí > làm tay, ROI âm).
+- Có nằm trong các lý do bàn đã viết không? Nếu có: cổng vòng 1 đã đỡ được bao nhiêu (đọc cột prepared trong report)? Nếu không: vì sao cả bàn không nghĩ tới? Có nằm một phần ở lăng kính *Con người và vận hành* (nhân viên không tin trợ lý nên kiểm lại 100%, đã nêu ở B6), nhưng **chưa nghĩ tới nguyên nhân kích hoạt mất niềm tin là dùng mã phê duyệt (`approval_id`) không hợp lệ và thiếu `decision_note`**, nên ở vòng 1 chỉ chặn được 1 phần (`6.845.000đ` → `1.140.000đ`), chưa đạt điều kiện để nhân viên thôi kiểm tay 100%.
 - Lý do còn thiếu, thêm bây giờ:
 
 | Lý do thất bại (viết ở thì quá khứ) | Lăng kính | Kiểm được bằng gì (trace / data / config nào) |
 |---|---|---|
-| | | |
+| Hệ thống cho phép chi khoản hoàn vượt hạn mức tự động bằng mã phê duyệt đã dùng, hết hạn, bị thu hồi, cấp cho ticket khác hoặc vượt `max_vnd`, và không có ghi chú giải thích nên trưởng ca mất niềm tin và bắt kiểm tay 100%. | Kỹ thuật + Con người & Vận hành | `lab10.trace` (`approval_used`, `S8-04`), `approvals` và `staff_behavior` trong `world_patch.json`, `config/operating_gates.json` (`decision_note`, `review_sampling_pct`). |
 
 ---
 

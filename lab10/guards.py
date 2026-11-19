@@ -70,6 +70,30 @@ def write_gate(ctx, action):
             ctx.log("guard_escalate_daily_cap", cap_vnd=cap)
             return Verdict.escalate("vượt trần hoàn tự động trong ngày, chuyển người duyệt")
 
+        # Vòng 2 (S8): kiểm tra tính hợp lệ của mã phê duyệt khi vượt auto_limit_vnd
+        amt = action.get("amount_vnd", 0)
+        if pol and amt > pol.get("auto_limit_vnd", 0):
+            app_id = action.get("approval_id")
+            if not app_id:
+                ctx.log("guard_escalate_missing_approval", amount_vnd=amt)
+                return Verdict.escalate("khoản hoàn vượt hạn mức tự động nhưng thiếu mã phê duyệt")
+            matches = ctx.tools.lookup_approvals(approval_id=app_id)
+            if not matches:
+                ctx.log("guard_escalate_unknown_approval", approval_id=app_id)
+                return Verdict.escalate("mã phê duyệt không tồn tại trong hệ thống")
+            app = matches[0]
+            order_id = action.get("order_id") or ctx.ticket.get("order_id")
+            if (
+                app.get("status") != "valid"
+                or app.get("expires_at", "") < ctx.as_of
+                or app.get("ticket_id") != ctx.ticket.get("ticket_id")
+                or app.get("order_id") != order_id
+                or app.get("customer_id") != ctx.ticket.get("customer_id")
+                or amt > app.get("max_vnd", 0)
+            ):
+                ctx.log("guard_escalate_invalid_approval", approval_id=app_id, status=app.get("status"), expires_at=app.get("expires_at"), max_vnd=app.get("max_vnd"))
+                return Verdict.escalate("mã phê duyệt không hợp lệ (hết hạn/thu hồi/đã dùng/sai đối tượng/vượt hạn mức duyệt)")
+
     if tool == "file_carrier_fault":
         order, parcel, pol, delay_days = _resolve_truth(ctx, action)
         if order and parcel and pol and not H.carrier_at_fault(pol, parcel, delay_days):
