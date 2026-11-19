@@ -50,7 +50,7 @@ Học được: giải thích mỗi quyết định và kiểm mẫu có thể k
 
 ### Phần việc phụ trách
 
-Vai Sản phẩm và kinh doanh. Phiếu A: mục A1 câu 1.1, mục A4 câu 1.6 (sáu câu tiêu chí, hai câu ranh giới đầu ra, bốn câu soát, ba số `business_ops`, ngày xem lại). Phiếu B: mục B3 (câu 2.3), B7.4 (câu 2.9), B8 (quyết định v1). File: `config/acceptance_criteria.json`, `config/operating_gates.json` mục `business`.
+Vai Sản phẩm và kinh doanh. Phiếu A: mục A1 câu 1.1, mục A4 câu 1.6 (sáu câu tiêu chí, hai câu ranh giới đầu ra, bốn câu soát, ba số `business_ops`, ngày xem lại). Phiếu B: mục B3 (câu 2.3), B7.4 (câu 2.9), B8 (quyết định v1). Phiếu C (thẻ S8): mục C5 câu 3.2 (specification), mục C12 (quyết định v2 và ba dòng bắt buộc), cùng soát số liệu C0–C1 và C7 của nhóm. File: `config/acceptance_criteria.json`, `config/operating_gates.json` mục `business`.
 
 ### Đóng góp cụ thể
 
@@ -59,14 +59,18 @@ Vai Sản phẩm và kinh doanh. Phiếu A: mục A1 câu 1.1, mục A4 câu 1.6
 - Đặt cổng `business`: trần hoàn 1.800.000đ/ngày, ngân sách 1.500đ/ticket, phạm vi pilot HN và HCM (loại HCM-B2B), kèm lý do có số.
 - Câu 2.3: bản đồ dữ liệu và ví dụ drift chính sách REFUND-v3 sang v4 ngày 01/12/2026.
 - Soát B8 của nhóm: khôi phục câu hỏi mẫu bị mất, thống nhất ngày xem lại tiêu chí 30/11/2026 giữa Phiếu A và B8.
+- Vòng 2 (thẻ S8): chạy lại `lab10.grade --incident S8` để đối chiếu số liệu nhóm ghi ở C0–C1 (hoàn sai 1.140.000đ, 5 lỗi hãng oan, chi phí 11.846đ, ROI −0,93 ở mốc prepared đều khớp) và chỉ ra nguyên nhân còn đỏ ở mục `3 visible`: nhân viên vẫn kiểm tay 100% vì `decision_note` và `review_sampling_pct` chưa bật. Tôi đề xuất bật hai khóa này cho nhóm; việc sửa `operating_gates.json` mục `operations` thuộc phần Người 4.
+- Phát hiện hai lỗi môi trường Windows làm mục `1 integrity` ❌ (file trên đĩa là CRLF còn repo là LF; hash `round1.lock` được tính trên bản CRLF). Nhóm trưởng đã xử lý bằng `.gitattributes`; tôi xác nhận lại bằng cách clone mới và chạy `grade` ra `PASS-VISIBLE`.
+- C5 câu 3.2: viết specification cho mã phê duyệt (tồn tại, `valid`, chưa hết hạn, đúng ticket/đơn/khách, không vượt `max_vnd`) và cách kiểm bằng `write_gate`, dòng report `wrongful_refund_vnd`, monitor `invalid_approval_guard_rate`.
+- C12: quyết định v2 là Tiếp tục (giữ như v1) trong phạm vi HN và HCM, kèm điều kiện giữ `decision_note`, kiểm mẫu 10% và cổng phê duyệt; điền ba dòng bắt buộc (giả định về hành vi nhân viên và bảng `approvals`, cổng NGĂN còn niềm tin chỉ GIẢM, các điều cần đo lại trong pilot thật).
 
 ### Bằng chứng
 
-Commit `78fe22b`, `b9b5a5b`, `706d829`, `ccd08b1`, `8153af1`; commit ký tiêu chí `f512b92`; mã lần chạy `R-base-before-20261119-150830-5299ea`, `R-base-prepared-20261119-153943-69a4dd` (Phiếu B mục B0, B8).
+Commit `78fe22b`, `b9b5a5b`, `706d829`, `ccd08b1`, `8153af1`, `da02895` (vòng 1: Phiếu A, B3, B7.4, B8, A5, TEAM.md) và `dd27c5f` (vòng 2: Phiếu C mục C5 câu 3.2 và C12); commit ký tiêu chí `f512b92`; mã lần chạy vòng 1 `R-base-before-20261119-150830-5299ea`, `R-base-prepared-20261119-153943-69a4dd` (Phiếu B mục B0, B8); mã lần chạy vòng 2 `R-S8-before-20261119-160904-69a4dd`, `R-S8-prepared-20261119-160905-69a4dd`, `R-S8-after-20261119-165233-f03b12`, `R-S8-grade-20261119-171032-f03b12` (Phiếu C mục C0, C12).
 
 ### Exit ticket
 
-Học được: ROI trong lab chia cho chi phí chứ không chia cho tiền làm tay, nên phải đọc `lab10/ops.py` trước khi chốt ngưỡng; và tiêu chí ký bằng hash của từng byte nên cả lỗi xuống dòng CRLF cũng làm lệch. Còn chưa chắc: các ngưỡng này (chi phí 6.000đ, ROI 0,5, pass_k 0,85) có còn hợp lý trên gói sự cố và bài kiểm tra ẩn hay không, vì bộ nền đang cho kết quả 1,0.
+Học được: ROI trong lab chia cho chi phí chứ không chia cho tiền làm tay, nên phải đọc `lab10/ops.py` trước khi chốt ngưỡng; và tiêu chí ký bằng hash của từng byte nên cả lỗi xuống dòng CRLF cũng làm lệch. Còn chưa chắc: các ngưỡng này (chi phí 6.000đ, ROI 0,5, pass_k 0,85) có còn hợp lý trên gói sự cố và bài kiểm tra ẩn hay không, vì bộ nền đang cho kết quả 1,0; và nhân viên CSKH có thật sự chịu chuyển sang kiểm mẫu 10% ngoài đời hay không, vì kết quả chi phí và ROI của S8 phụ thuộc hoàn toàn vào điều đó.
 
 
 ## NguyenXuanDat-2A202603958
